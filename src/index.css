@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+  }
+  
+  p {
+    line-height: 1.5;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black px-10 py-5 rounded-none font-black uppercase tracking-widest hover:shadow-[0_0_40px_rgba(250,204,21,0.6)] transition-all duration-300 transform hover:scale-105 relative overflow-hidden;
+  }
+  
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+  
+  .btn-secondary {
+    @apply bg-black dark:bg-white text-yellow-400 dark:text-black px-10 py-5 rounded-none font-black uppercase tracking-widest border-4 border-yellow-400 hover:bg-yellow-400 hover:text-black dark:hover:bg-black dark:hover:text-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(250,204,21,0.3)];
+  }
+  
+  .btn-outline {
+    @apply border-4 border-yellow-400 text-yellow-400 px-10 py-5 rounded-none font-black uppercase tracking-widest hover:bg-yellow-400 hover:text-black hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 transform hover:scale-105;
+  }
+
+  .glass-morphism {
+    @apply bg-black/80 dark:bg-black/90 backdrop-blur-xl border-2 border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.1)];
+  }
+
+  .card-premium {
+    @apply bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 hover:border-yellow-400 shadow-2xl transition-all duration-500 ease-out;
+  }
+
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent font-black;
+  }
+
+  .section-dark {
+    @apply bg-black text-white;
+  }
+
+  .section-light {
+    @apply bg-gradient-to-br from-gray-900 to-black text-white;
+  }
+}
+
+/* Hero gradient animation - VIBRANT VERSION */
+.hero-gradient {
+  background: linear-gradient(135deg, #000000 0%, #1a1a00 25%, #2d2d00 50%, #1a1a00 75%, #000000 100%);
+  animation: gradientShift 8s ease infinite;
+  background-size: 300% 300%;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Glowing border animation */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.3), 0 0 40px rgba(250, 204, 21, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(250, 204, 21, 0.6), 0 0 80px rgba(250, 204, 21, 0.3); }
+}
+
+.glow-effect {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Glass effect - BOLD VERSION */
+.glass-effect {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 2px solid rgba(250, 204, 21, 0.2);
+  box-shadow: 0 0 30px rgba(250, 204, 21, 0.1);
+}
+
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(250, 204, 21, 0.3);
+  box-shadow: 0 0 40px rgba(250, 204, 21, 0.15);
+}
+
+/* Product card hover effect - EXPLOSIVE */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  border: 2px solid transparent;
+}
+
+.card-hover:hover {
+  transform: translateY(-16px) scale(1.02);
+  box-shadow: 0 40px 80px -12px rgba(250, 204, 21, 0.4), 0 0 60px rgba(250, 204, 21, 0.2);
+  border: 2px solid rgba(250, 204, 21, 0.5);
+}
+
+/* Parallax container */
+.parallax-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Custom scrollbar - BOLD GOLD */
+::-webkit-scrollbar {
+  width: 14px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-black;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
+  border-radius: 10px;
+  border: 2px solid black;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+}
+
+/* Premium image overlay */
+.image-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-overlay:hover::after {
+  opacity: 1;
+}
+
+/* Gold accent line - VIBRANT */
+.gold-accent {
+  position: relative;
+}
+
+.gold-accent::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #FBBF24, #F59E0B, #FBBF24);
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Ant Design customization for dark mode */
+.dark .ant-input,
+.dark .ant-select-selector {
+  @apply bg-gray-800 border-gray-700 text-white;
+}
+
+.dark .ant-btn-default {
+  @apply bg-gray-800 border-gray-700 text-white;
+}
+
+/* Video overlay */
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+/* Luxury spacing */
+.luxury-container {
+  @apply max-w-7xl mx-auto px-6 lg:px-8;
+}
+
+/* Ant Design Dark Mode Customization for Admin Dashboard */
+.dark .ant-table {
+  background: #1F2937 !important;
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-table-thead > tr > th {
+  background: #111827 !important;
+  color: #F1F1F1 !important;
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #374151 !important;
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-table-tbody > tr:hover > td {
+  background: #374151 !important;
+}
+
+.dark .ant-modal-content {
+  background: #1F2937 !important;
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-modal-header {
+  background: #111827 !important;
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark .ant-modal-title {
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-form-item-label > label {
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-input-number-input {
+  background: #111827 !important;
+  border-color: #374151 !important;
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-select-dropdown {
+  background: #1F2937 !important;
+}
+
+.dark .ant-select-item {
+  color: #F1F1F1 !important;
+}
+
+.dark .ant-select-item-option-selected {
+  background: #374151 !important;
+}
+
+.dark .ant-upload {
+  background: #111827 !important;
+  border-color: #374151 !important;
+}
+
+.dark .ant-descriptions-item-label {
+  color: #9CA3AF !important;
+  background: #111827 !important;
+}
+
+.dark .ant-descriptions-item-content {
+  color: #F1F1F1 !important;
+  background: #1F2937 !important;
+}
+
+.dark .ant-card-head {
+  border-bottom-color: #374151 !important;
+}
+
+/* Admin — Deleted product rows */
+.line-through-cells td:not(:last-child) {
+  text-decoration: line-through;
+  text-decoration-color: rgba(220, 38, 38, 0.6);
+}
+.line-through-cells {
+  background-color: rgba(254, 202, 202, 0.15) !important;
+}
+.dark .line-through-cells {
+  background-color: rgba(127, 29, 29, 0.2) !important;
+}
