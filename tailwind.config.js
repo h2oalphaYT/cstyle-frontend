@@ -6,13 +6,19 @@ export default {
     extend: {
       colors: {
         brand: {
-          black: '#0D0D0D',
+          black: '#121212',
+          canvas: '#FAFAFA',
+          surface: '#1A1A1A',
+          champagne: '#C5A880',
+          'champagne-dark': '#A88B65',
           gold: '#D4AF37',
           beige: '#F5E6CC',
           'gold-dark': '#B8941F',
           'gold-light': '#E8C35A',
           'text-light': '#F1F1F1',
-          'text-dark': '#1A1A1A'
+          'text-dark': '#1A1A1A',
+          muted: '#A3A3A3',
+          subtle: '#E5E5E5',
         }
       },
       fontFamily: {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, User, Heart, Search, Menu, X, Sun, Moon, DollarSign, Tag, Copy, Check } from 'lucide-react';
@@ -10,9 +10,11 @@ import { useTheme } from '../context/ThemeContext';
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { totalItems } = useCart();
   const { user, logout } = useAuth();
   const { items: wishlistItems } = useWishlist();
@@ -52,6 +54,14 @@ const Header = () => {
     if (searchQuery.trim()) {
       navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
+      setSearchOpen(false);
+    }
+  };
+
+  const toggleSearch = () => {
+    setSearchOpen(prev => !prev);
+    if (!searchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   };
 
@@ -64,49 +74,53 @@ const Header = () => {
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
-        ? 'bg-white/95 dark:bg-brand-black/95 backdrop-blur-md shadow-lg'
-        : 'bg-white dark:bg-brand-black'
-        }`}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className={`sticky top-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? 'bg-brand-black/96 backdrop-blur-md shadow-[0_1px_0_rgba(255,255,255,0.06)]'
+          : 'bg-brand-black'
+      }`}
     >
-      {/* Top Bar - Yellow with Promo Codes */}
-      <div className="bg-brand-gold text-brand-black py-2">
+      {/* Announcement Bar — subtle dark strip */}
+      <div className="bg-brand-surface text-brand-subtle py-2">
         <div className="luxury-container">
-          <div className="flex items-center justify-between text-xs md:text-sm font-medium">
-            {/* Left Side - Made in Sri Lanka */}
-            <div className="flex items-center space-x-2 md:space-x-4">
-              <span className="whitespace-nowrap">🇱🇰 Made in Sri Lanka</span>
-              <span className="hidden lg:inline">|</span>
-              <span className="hidden lg:inline whitespace-nowrap">Free Shipping Over {currency === 'USD' ? '$100' : 'Rs 32,500'}</span>
+          <div className="flex items-center justify-between text-xs font-medium tracking-[0.12em] uppercase">
+            {/* Left Side */}
+            <div className="flex items-center space-x-4">
+              <span className="whitespace-nowrap opacity-80">🇱🇰 Made in Sri Lanka</span>
+              <span className="hidden lg:inline text-brand-subtle/40">|</span>
+              <span className="hidden lg:inline whitespace-nowrap opacity-70">
+                Free Shipping Over {currency === 'USD' ? '$100' : 'Rs 32,500'}
+              </span>
             </div>
 
-            {/* Center - Promo Codes (Rotating) */}
-            <div className="flex items-center space-x-2 mx-2 md:mx-4 min-w-0">
-              <Tag className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+            {/* Center - Rotating Promo Codes */}
+            <div className="flex items-center space-x-2 mx-4 min-w-0">
+              <Tag className="w-3 h-3 flex-shrink-0 text-brand-champagne" />
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentPromoIndex}
-                  initial={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
+                  exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.3 }}
                   className="flex items-center space-x-2 min-w-0"
                 >
-                  <span className="font-black whitespace-nowrap truncate">
+                  <span className="font-semibold text-brand-subtle whitespace-nowrap truncate tracking-[0.15em]">
                     {promoCodes[currentPromoIndex].code}
                   </span>
-                  <span className="hidden sm:inline text-xs opacity-90 truncate">
-                    - {promoCodes[currentPromoIndex].desc}
+                  <span className="hidden sm:inline text-xs opacity-60 truncate">
+                    — {promoCodes[currentPromoIndex].desc}
                   </span>
                   <button
                     onClick={() => copyPromoCode(promoCodes[currentPromoIndex].code)}
-                    className="flex-shrink-0 ml-1 p-1 hover:bg-brand-black/10 rounded transition-colors"
+                    className="flex-shrink-0 ml-1 p-1 hover:text-brand-champagne rounded transition-colors"
                     aria-label="Copy promo code"
                   >
                     {copiedCode === promoCodes[currentPromoIndex].code ? (
-                      <Check className="w-3 h-3 md:w-4 md:h-4" />
+                      <Check className="w-3 h-3 text-brand-champagne" />
                     ) : (
-                      <Copy className="w-3 h-3 md:w-4 md:h-4" />
+                      <Copy className="w-3 h-3" />
                     )}
                   </button>
                 </motion.div>
@@ -117,11 +131,11 @@ const Header = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={toggleCurrency}
-                className="flex items-center space-x-1 hover:opacity-80 transition-opacity whitespace-nowrap"
+                className="flex items-center space-x-1 hover:text-brand-champagne transition-colors whitespace-nowrap"
                 aria-label="Toggle Currency"
               >
-                <DollarSign className="w-3 h-3 md:w-4 md:h-4" />
-                <span className="font-bold">{currency}</span>
+                <DollarSign className="w-3 h-3" />
+                <span className="font-semibold tracking-[0.12em]">{currency}</span>
               </button>
             </div>
           </div>
@@ -130,28 +144,29 @@ const Header = () => {
 
       {/* Main Header */}
       <div className="luxury-container">
-        <div className="flex items-center justify-between h-20 lg:h-24">
+        <div className="flex items-center justify-between h-18 lg:h-20 py-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
+          <Link to="/" className="flex items-center space-x-3 group flex-shrink-0">
             <motion.div
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.03 }}
+              transition={{ duration: 0.25 }}
               className="relative"
             >
-              <div className="w-12 h-12 bg-gradient-gold flex items-center justify-center">
-                <span className="text-brand-black font-bold text-xl font-poppins">C</span>
+              {/* Minimal square logo mark */}
+              <div className="w-9 h-9 border border-brand-champagne/60 flex items-center justify-center group-hover:border-brand-champagne transition-colors duration-300">
+                <span className="text-brand-champagne font-light text-base tracking-widest font-poppins">C</span>
               </div>
-              <div className="absolute inset-0 bg-gradient-gold opacity-0 group-hover:opacity-50 blur-xl transition-opacity"></div>
             </motion.div>
             <div>
-              <span className="text-2xl lg:text-3xl font-bold font-poppins text-brand-black dark:text-white tracking-tight">
+              <span className="text-xl lg:text-2xl font-light font-poppins text-white tracking-[0.15em] uppercase">
                 Cstyle
               </span>
-              <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-widest">Sri Lanka</p>
+              <p className="text-[9px] text-brand-muted uppercase tracking-[0.3em] mt-0.5">Sri Lanka</p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8 xl:space-x-12">
+          <nav className="hidden lg:flex items-center space-x-10 xl:space-x-14">
             {[
               { path: '/', label: 'Home' },
               { path: '/shop', label: 'Shop' },
@@ -161,76 +176,95 @@ const Header = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative text-gray-700 dark:text-gray-300 hover:text-brand-gold dark:hover:text-brand-gold font-medium uppercase text-sm tracking-wider transition-colors group"
+                className="relative text-brand-muted hover:text-white text-xs uppercase tracking-[0.2em] transition-colors duration-300 group py-1"
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-gold group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-brand-champagne group-hover:w-full transition-all duration-400 ease-out" />
               </Link>
             ))}
           </nav>
 
-          {/* Search Bar (Desktop) */}
-          <form onSubmit={handleSearch} className="hidden xl:flex items-center flex-1 max-w-sm mx-8">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Search luxury fashion..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 bg-gray-100 dark:bg-gray-800 border-0 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-brand-gold transition-all"
-              />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Search className="w-5 h-5 text-gray-500 hover:text-brand-gold transition-colors" />
+          {/* Desktop Icons */}
+          <div className="hidden lg:flex items-center space-x-5">
+            {/* Expandable Search */}
+            <div className="relative flex items-center">
+              <AnimatePresence>
+                {searchOpen && (
+                  <motion.form
+                    key="search-form"
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 200 }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    onSubmit={handleSearch}
+                    className="overflow-hidden mr-2"
+                  >
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-transparent border-b border-brand-muted/40 focus:border-brand-champagne text-white placeholder-brand-muted/60 text-xs tracking-[0.12em] py-1 px-0 outline-none transition-colors duration-300"
+                    />
+                  </motion.form>
+                )}
+              </AnimatePresence>
+              <button
+                onClick={toggleSearch}
+                className="text-brand-muted hover:text-white transition-colors duration-300"
+                aria-label="Toggle search"
+              >
+                {searchOpen
+                  ? <X className="w-4 h-4" />
+                  : <Search className="w-4 h-4" />}
               </button>
             </div>
-          </form>
 
-          {/* Desktop Icons */}
-          <div className="hidden lg:flex items-center space-x-6">
             {/* Theme Toggle */}
             <motion.button
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="text-gray-700 dark:text-gray-300 hover:text-brand-gold dark:hover:text-brand-gold transition-colors"
+              className="text-brand-muted hover:text-white transition-colors duration-300"
               aria-label="Toggle Theme"
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </motion.button>
 
             {/* User */}
             {user ? (
               <div className="relative group">
-                <button className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-brand-gold dark:hover:text-brand-gold transition-colors">
-                  <User className="w-5 h-5" />
-                  <span className="text-sm font-medium hidden xl:inline">{user.name}</span>
+                <button className="flex items-center space-x-2 text-brand-muted hover:text-white transition-colors duration-300">
+                  <User className="w-4 h-4" />
+                  <span className="text-xs tracking-[0.12em] hidden xl:inline">{user.name}</span>
                 </button>
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <Link to="/profile" className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div className="absolute right-0 top-full mt-3 w-44 bg-brand-surface border border-white/8 shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link to="/profile" className="block px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
                     My Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block w-full text-left px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors"
                   >
                     Logout
                   </button>
                 </div>
               </div>
             ) : (
-              <Link to="/auth" className="text-gray-700 dark:text-gray-300 hover:text-brand-gold dark:hover:text-brand-gold transition-colors">
-                <User className="w-5 h-5" />
+              <Link to="/auth" className="text-brand-muted hover:text-white transition-colors duration-300">
+                <User className="w-4 h-4" />
               </Link>
             )}
 
             {/* Wishlist */}
-            <Link to="/wishlist" className="relative text-gray-700 dark:text-gray-300 hover:text-brand-gold dark:hover:text-brand-gold transition-colors">
-              <Heart className="w-5 h-5" />
+            <Link to="/wishlist" className="relative text-brand-muted hover:text-white transition-colors duration-300">
+              <Heart className="w-4 h-4" />
               {wishlistItems.length > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-2 -right-2 bg-brand-gold text-brand-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                  className="absolute -top-1.5 -right-1.5 bg-brand-champagne text-brand-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-semibold"
                 >
                   {wishlistItems.length}
                 </motion.span>
@@ -238,13 +272,13 @@ const Header = () => {
             </Link>
 
             {/* Cart */}
-            <Link to="/cart" className="relative text-gray-700 dark:text-gray-300 hover:text-brand-gold dark:hover:text-brand-gold transition-colors">
-              <ShoppingCart className="w-5 h-5" />
+            <Link to="/cart" className="relative text-brand-muted hover:text-white transition-colors duration-300">
+              <ShoppingCart className="w-4 h-4" />
               {totalItems > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-2 -right-2 bg-brand-gold text-brand-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                  className="absolute -top-1.5 -right-1.5 bg-brand-champagne text-brand-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-semibold"
                 >
                   {totalItems}
                 </motion.span>
@@ -255,14 +289,14 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden text-gray-700 dark:text-gray-300 p-2"
+            className="lg:hidden text-brand-muted hover:text-white p-2 transition-colors duration-300"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
         {/* Mobile Search */}
-        <div className="xl:hidden pb-4">
+        <div className="xl:hidden pb-3">
           <form onSubmit={handleSearch}>
             <div className="relative">
               <input
@@ -270,10 +304,10 @@ const Header = () => {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 bg-gray-100 dark:bg-gray-800 border-0 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-brand-gold"
+                className="w-full bg-transparent border-b border-white/10 focus:border-brand-champagne text-white placeholder-brand-muted/60 text-xs tracking-[0.12em] py-2 px-0 outline-none transition-colors duration-300"
               />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Search className="w-5 h-5 text-gray-500" />
+              <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2">
+                <Search className="w-4 h-4 text-brand-muted hover:text-brand-champagne transition-colors" />
               </button>
             </div>
           </form>
@@ -287,10 +321,11 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-brand-black"
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:hidden border-t border-white/6 bg-brand-black"
           >
-            <div className="luxury-container py-6">
-              <nav className="flex flex-col space-y-4 mb-6">
+            <div className="luxury-container py-8">
+              <nav className="flex flex-col space-y-1 mb-8">
                 {[
                   { path: '/', label: 'Home' },
                   { path: '/shop', label: 'Shop' },
@@ -300,7 +335,7 @@ const Header = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="text-gray-700 dark:text-gray-300 hover:text-brand-gold font-medium uppercase tracking-wider py-2"
+                    className="text-brand-muted hover:text-white font-light uppercase tracking-[0.2em] text-sm py-3 border-b border-white/5 last:border-0 transition-colors duration-300"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.label}
@@ -308,40 +343,40 @@ const Header = () => {
                 ))}
               </nav>
 
-              <div className="flex items-center justify-around pt-6 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex items-center justify-around pt-6 border-t border-white/6">
                 <button
                   onClick={toggleTheme}
-                  className="flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300"
+                  className="flex flex-col items-center space-y-1.5 text-brand-muted hover:text-white transition-colors"
                 >
-                  {theme === 'dark' ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-                  <span className="text-xs">Theme</span>
+                  {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  <span className="text-[10px] tracking-[0.15em] uppercase">Theme</span>
                 </button>
 
                 {user ? (
-                  <div className="flex flex-col items-center space-y-1">
-                    <User className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                    <span className="text-xs text-gray-700 dark:text-gray-300">{user.name}</span>
+                  <div className="flex flex-col items-center space-y-1.5">
+                    <User className="w-5 h-5 text-brand-muted" />
+                    <span className="text-[10px] tracking-[0.15em] uppercase text-brand-muted">{user.name}</span>
                   </div>
                 ) : (
                   <Link
                     to="/auth"
-                    className="flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300"
+                    className="flex flex-col items-center space-y-1.5 text-brand-muted hover:text-white transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <User className="w-6 h-6" />
-                    <span className="text-xs">Login</span>
+                    <User className="w-5 h-5" />
+                    <span className="text-[10px] tracking-[0.15em] uppercase">Login</span>
                   </Link>
                 )}
 
                 <Link
                   to="/wishlist"
-                  className="relative flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300"
+                  className="relative flex flex-col items-center space-y-1.5 text-brand-muted hover:text-white transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Heart className="w-6 h-6" />
-                  <span className="text-xs">Wishlist</span>
+                  <Heart className="w-5 h-5" />
+                  <span className="text-[10px] tracking-[0.15em] uppercase">Wishlist</span>
                   {wishlistItems.length > 0 && (
-                    <span className="absolute top-0 right-0 bg-brand-gold text-brand-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 right-0 bg-brand-champagne text-brand-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-semibold">
                       {wishlistItems.length}
                     </span>
                   )}
@@ -349,13 +384,13 @@ const Header = () => {
 
                 <Link
                   to="/cart"
-                  className="relative flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300"
+                  className="relative flex flex-col items-center space-y-1.5 text-brand-muted hover:text-white transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <ShoppingCart className="w-6 h-6" />
-                  <span className="text-xs">Cart</span>
+                  <ShoppingCart className="w-5 h-5" />
+                  <span className="text-[10px] tracking-[0.15em] uppercase">Cart</span>
                   {totalItems > 0 && (
-                    <span className="absolute top-0 right-0 bg-brand-gold text-brand-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 right-0 bg-brand-champagne text-brand-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-semibold">
                       {totalItems}
                     </span>
                   )}

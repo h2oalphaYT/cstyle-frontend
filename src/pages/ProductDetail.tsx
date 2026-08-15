@@ -282,8 +282,8 @@ const ProductDetail: React.FC = () => {
                       exit={{    opacity: 0, scale: 0.96, x: -10  }}
                       transition={{ duration: 0.18, ease: 'easeOut' }}
                     >
-                      {/* Gold top bar */}
-                      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-yellow-400 via-brand-gold to-yellow-600" />
+                      {/* Champagne top bar */}
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-brand-champagne" />
                       {/* Zoom badge */}
                       <div className="absolute bottom-2 right-2 text-[10px] text-white/60 bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
                         {ZOOM}× zoom
@@ -485,13 +485,23 @@ const ProductDetail: React.FC = () => {
               <motion.button
                 onClick={handleAddToCart}
                 whileTap={{ scale: 0.98 }}
-                className={`relative flex-1 overflow-hidden py-4 font-black uppercase tracking-widest text-sm transition-all duration-300
-                  ${addedToCart ? 'bg-green-500 text-white' : 'bg-brand-gold text-brand-black hover:bg-yellow-400'}`}
+                className={`relative flex-1 overflow-hidden py-4 font-medium uppercase tracking-[0.2em] text-xs transition-all duration-300 rounded-sm ${
+                  addedToCart
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-brand-canvas text-brand-black hover:bg-brand-black hover:text-brand-canvas border border-transparent hover:border-brand-canvas'
+                }`}
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {addedToCart ? <><Check className="w-5 h-5" /> Added to Cart!</> : <><ShoppingCart className="w-5 h-5" /> Add to Cart</>}
+                  {addedToCart ? (
+                    <>
+                      <Check className="w-4 h-4" /> Added to Selection
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4" /> Add to Cart
+                    </>
+                  )}
                 </span>
-                <motion.div className="absolute inset-0 bg-yellow-300" initial={{ y: '100%' }} whileHover={{ y: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }} />
               </motion.button>
               <motion.button
                 onClick={handleWishlistToggle}

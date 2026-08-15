@@ -1,140 +1,104 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { CheckCircle, Package, Mail, ArrowRight } from 'lucide-react';
 
 const OrderSuccess: React.FC = () => {
   const orderNumber = `CS${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+    <div className="min-h-screen bg-brand-black py-20 flex items-center justify-center">
+      <div className="luxury-container max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="space-y-8"
+        >
+          {/* Main Card */}
+          <div className="bg-brand-surface border border-white/6 p-10 md:p-12 text-center space-y-8">
             {/* Success Icon */}
-            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-12 h-12 text-green-500" />
+            <div className="w-16 h-16 border border-brand-champagne/40 bg-brand-black flex items-center justify-center mx-auto">
+              <CheckCircle className="w-8 h-8 text-brand-champagne" />
             </div>
 
-            {/* Main Message */}
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">
-              Order Confirmed!
-            </h1>
-            <p className="text-lg text-slate-600 mb-6">
-              Thank you for your purchase. Your order has been successfully placed and is being processed.
-            </p>
+            {/* Header */}
+            <div>
+              <p className="text-brand-champagne uppercase tracking-[0.35em] text-xs mb-2">Order Confirmed</p>
+              <h1 className="text-3xl md:text-4xl font-light text-white uppercase tracking-[0.15em] mb-3">
+                Thank You For Your Order
+              </h1>
+              <p className="text-brand-muted text-xs tracking-wide max-w-md mx-auto leading-relaxed">
+                Your purchase has been placed successfully and our atelier is now preparing your items.
+              </p>
+            </div>
 
-            {/* Order Details */}
-            <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-semibold text-slate-900 mb-4">Order Details</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Order Number:</span>
-                  <span className="font-semibold text-slate-900">#{orderNumber}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Order Date:</span>
-                  <span className="font-semibold text-slate-900">
-                    {new Date().toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Estimated Delivery:</span>
-                  <span className="font-semibold text-slate-900">
-                    {new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
+            {/* Details Box */}
+            <div className="bg-brand-black border border-white/6 p-6 text-left space-y-4 text-xs tracking-wide">
+              <div className="flex justify-between items-center pb-2 border-b border-white/6">
+                <span className="text-brand-muted uppercase tracking-[0.15em] text-[10px]">Order Number</span>
+                <span className="text-brand-champagne font-light tracking-wider">#{orderNumber}</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-white/6">
+                <span className="text-brand-muted uppercase tracking-[0.15em] text-[10px]">Order Date</span>
+                <span className="text-white font-light">
+                  {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-brand-muted uppercase tracking-[0.15em] text-[10px]">Estimated Delivery</span>
+                <span className="text-white font-light">
+                  {new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
               </div>
             </div>
 
-            {/* What's Next */}
-            <div className="text-left mb-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">What happens next?</h3>
+            {/* Next Steps */}
+            <div className="text-left space-y-4 pt-2">
+              <p className="text-[10px] text-brand-champagne uppercase tracking-[0.25em]">Fulfillment Timeline</p>
               <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm font-bold">1</span>
+                {[
+                  { step: '1', title: 'Order Processing', desc: 'Crafting & inspecting items for dispatch.' },
+                  { step: '2', title: 'Shipping Confirmation', desc: 'You will receive a tracking code via email.' },
+                  { step: '3', title: 'Express Delivery', desc: 'Your parcel arrives within 3-5 business days.' }
+                ].map((item) => (
+                  <div key={item.step} className="flex items-start gap-4">
+                    <div className="w-6 h-6 border border-brand-champagne/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-brand-champagne text-[10px]">{item.step}</span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-light text-white uppercase tracking-[0.15em]">{item.title}</p>
+                      <p className="text-[11px] text-brand-muted tracking-wide mt-0.5">{item.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-slate-900">Order Processing</p>
-                    <p className="text-slate-600 text-sm">We're preparing your items for shipment.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-600 text-sm font-bold">2</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-700">Shipping Confirmation</p>
-                    <p className="text-slate-600 text-sm">You'll receive tracking information via email.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-600 text-sm font-bold">3</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-700">Delivery</p>
-                    <p className="text-slate-600 text-sm">Your order will arrive in 3-5 business days.</p>
-                  </div>
-                </div>
+                ))}
               </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-              <Link
-                to="/shop"
-                className="btn-primary flex items-center justify-center space-x-2"
-              >
-                <span>Continue Shopping</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <button className="btn-outline flex items-center justify-center space-x-2">
-                <Package className="w-4 h-4" />
-                <span>Track Order</span>
-              </button>
             </div>
 
             {/* Email Notification */}
-            <div className="flex items-center justify-center space-x-2 text-sm text-slate-600 bg-blue-50 rounded-lg p-3">
-              <Mail className="w-4 h-4 text-blue-500" />
-              <span>A confirmation email has been sent to your email address.</span>
+            <div className="flex items-center justify-center gap-2.5 text-[11px] text-brand-muted bg-brand-black border border-white/6 p-3">
+              <Mail className="w-3.5 h-3.5 text-brand-champagne" />
+              <span>A detailed confirmation email has been dispatched to your address.</span>
             </div>
-          </div>
 
-          {/* Support Section */}
-          <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 text-center">
-              Need Help?
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
-              <div>
-                <h4 className="font-medium text-slate-900 mb-1">Customer Support</h4>
-                <p className="text-slate-600 text-sm mb-2">Monday - Friday, 9AM - 6PM EST</p>
-                <a href="tel:+15551234567" className="text-slate-900 hover:text-slate-700 font-medium">
-                  +1 (555) 123-4567
-                </a>
-              </div>
-              <div>
-                <h4 className="font-medium text-slate-900 mb-1">Email Support</h4>
-                <p className="text-slate-600 text-sm mb-2">We'll respond within 24 hours</p>
-                <a href="mailto:support@cstyle.com" className="text-slate-900 hover:text-slate-700 font-medium">
-                  support@cstyle.com
-                </a>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <Link to="/shop" className="flex-1">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-center gap-2 bg-brand-canvas text-brand-black py-4 text-xs font-medium uppercase tracking-[0.2em] rounded-sm hover:bg-brand-black hover:text-brand-canvas border border-transparent hover:border-brand-canvas transition-all duration-300 group"
+                >
+                  <span>Continue Shopping</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </motion.button>
+              </Link>
+              <button className="py-4 px-6 border border-white/15 text-brand-muted hover:border-brand-champagne hover:text-brand-champagne text-xs uppercase tracking-[0.2em] transition-colors duration-300 flex items-center justify-center gap-2">
+                <Package className="w-3.5 h-3.5" />
+                <span>Track Order</span>
+              </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

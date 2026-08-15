@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Filter, Grid2x2 as Grid, List, X, Sparkles, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Filter, Grid2x2 as Grid, List, X } from 'lucide-react';
 import { products, categories } from '../data/products';
 import ProductCard from '../components/ProductCard';
 
@@ -26,7 +26,6 @@ const Shop: React.FC = () => {
   useEffect(() => {
     let filtered = [...products];
 
-    // Search filter
     if (searchQuery) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,17 +34,14 @@ const Shop: React.FC = () => {
       );
     }
 
-    // Category filter
     if (filters.category) {
       filtered = filtered.filter(product => product.category === filters.category);
     }
 
-    // Subcategory filter
     if (filters.subcategory) {
       filtered = filtered.filter(product => product.subcategory === filters.subcategory);
     }
 
-    // Price filter
     if (filters.minPrice) {
       filtered = filtered.filter(product => product.price >= parseFloat(filters.minPrice));
     }
@@ -53,12 +49,10 @@ const Shop: React.FC = () => {
       filtered = filtered.filter(product => product.price <= parseFloat(filters.maxPrice));
     }
 
-    // Size filter
     if (filters.size) {
       filtered = filtered.filter(product => product.sizes.includes(filters.size));
     }
 
-    // Color filter
     if (filters.color) {
       filtered = filtered.filter(product =>
         product.colors.some(color =>
@@ -67,7 +61,6 @@ const Shop: React.FC = () => {
       );
     }
 
-    // Sort
     switch (filters.sortBy) {
       case 'price-low':
         filtered.sort((a, b) => a.price - b.price);
@@ -112,244 +105,269 @@ const Shop: React.FC = () => {
   const allColors = [...new Set(products.flatMap(p => p.colors))];
 
   return (
-    <div className="min-h-screen bg-black py-12">
-      <div className="luxury-container">
-        {/* EXPLOSIVE HEADER */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-7xl font-black mb-6">
-              <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
-                {searchQuery ? `SEARCH: "${searchQuery}"` : 'PREMIUM COLLECTION'}
-              </span>
+    <div className="min-h-screen bg-brand-black">
+      {/* Page Header */}
+      <div className="border-b border-white/6">
+        <div className="luxury-container py-16 pt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-center"
+          >
+            <p className="text-brand-champagne uppercase tracking-[0.35em] text-xs mb-4">
+              {searchQuery ? 'Search Results' : 'Collection'}
+            </p>
+            <h1
+              className="font-light text-white uppercase tracking-[0.15em] mb-4"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 300 }}
+            >
+              {searchQuery ? `"${searchQuery}"` : 'Premium Collection'}
             </h1>
-            <div className="h-1 w-32 bg-gradient-to-r from-yellow-400 to-yellow-600 mx-auto mb-6" />
-            <div className="flex items-center justify-center gap-4 text-gray-400">
-              <Sparkles className="w-5 h-5 text-yellow-400" />
-              <p className="text-xl font-bold uppercase tracking-wider">
-                {filteredProducts.length} Premium Product{filteredProducts.length !== 1 ? 's' : ''} Available
-              </p>
-              <TrendingUp className="w-5 h-5 text-yellow-400" />
-            </div>
-          </div>
+            <div className="h-px w-10 bg-brand-champagne mx-auto mb-4" />
+            <p className="text-brand-muted text-xs tracking-[0.2em] uppercase">
+              {filteredProducts.length} Product{filteredProducts.length !== 1 ? 's' : ''} Available
+            </p>
+          </motion.div>
+        </div>
+      </div>
 
-          {/* CONTROLS BAR */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-gradient-to-r from-gray-900 to-black border-2 border-gray-800 p-6">
-            <div className="flex items-center gap-4">
-              {/* View Mode Toggle */}
-              <div className="flex border-2 border-yellow-400 overflow-hidden">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-3 transition-all duration-300 ${viewMode === 'grid' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-black' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}
-                >
-                  <Grid className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-3 transition-all duration-300 ${viewMode === 'list' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-black' : 'bg-black text-yellow-400 hover:bg-gray-900'}`}
-                >
-                  <List className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Filter Toggle */}
+      <div className="luxury-container py-12">
+        {/* Controls Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="flex flex-col md:flex-row justify-between items-center gap-5 mb-10 pb-6 border-b border-white/6"
+        >
+          <div className="flex items-center gap-4">
+            {/* View Mode Toggle */}
+            <div className="flex border border-white/10 overflow-hidden">
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-black uppercase tracking-wider hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all duration-300 group"
+                onClick={() => setViewMode('grid')}
+                className={`p-2.5 transition-colors duration-300 ${
+                  viewMode === 'grid'
+                    ? 'bg-brand-champagne text-brand-black'
+                    : 'text-brand-muted hover:text-white'
+                }`}
+                aria-label="Grid view"
               >
-                <Filter className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                <span>{showFilters ? 'Hide' : 'Show'} Filters</span>
+                <Grid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2.5 border-l border-white/10 transition-colors duration-300 ${
+                  viewMode === 'list'
+                    ? 'bg-brand-champagne text-brand-black'
+                    : 'text-brand-muted hover:text-white'
+                }`}
+                aria-label="List view"
+              >
+                <List className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Sort Dropdown */}
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="px-6 py-3 bg-black border-2 border-yellow-400 text-yellow-400 font-bold uppercase tracking-wider focus:outline-none focus:shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all cursor-pointer"
+            {/* Filter Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2.5 px-5 py-2.5 text-xs uppercase tracking-[0.18em] font-medium border transition-colors duration-300 ${
+                showFilters
+                  ? 'border-brand-champagne text-brand-champagne'
+                  : 'border-white/20 text-brand-muted hover:border-brand-champagne/50 hover:text-white'
+              }`}
             >
-              <option value="name">Sort: A-Z</option>
-              <option value="price-low">Price: Low → High</option>
-              <option value="price-high">Price: High → Low</option>
-              <option value="rating">Top Rated ⭐</option>
-              <option value="newest">New Arrivals 🔥</option>
-            </select>
+              <Filter className="w-3.5 h-3.5" />
+              {showFilters ? 'Hide' : 'Filter'}
+            </button>
           </div>
+
+          {/* Sort Dropdown */}
+          <select
+            value={filters.sortBy}
+            onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+            className="px-5 py-2.5 bg-transparent border border-white/15 text-brand-muted text-xs uppercase tracking-[0.12em] focus:outline-none focus:border-brand-champagne/50 transition-colors cursor-pointer appearance-none hover:border-white/30"
+          >
+            <option value="name" className="bg-brand-black">Sort: A–Z</option>
+            <option value="price-low" className="bg-brand-black">Price: Low → High</option>
+            <option value="price-high" className="bg-brand-black">Price: High → Low</option>
+            <option value="rating" className="bg-brand-black">Top Rated</option>
+            <option value="newest" className="bg-brand-black">New Arrivals</option>
+          </select>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* EXPLOSIVE FILTERS SIDEBAR */}
-          <motion.div
-            initial={false}
-            animate={{
-              width: showFilters ? '320px' : '0px',
-              opacity: showFilters ? 1 : 0
-            }}
-            transition={{ duration: 0.3 }}
-            className={`${showFilters ? 'block' : 'hidden lg:block'} lg:w-80 space-y-6`}
-          >
-            <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-yellow-400 p-8 relative overflow-hidden">
-              {/* Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-transparent pointer-events-none" />
-
-              <div className="relative z-10">
-                <div className="flex justify-between items-center mb-8">
-                  <h3 className="text-2xl font-black text-yellow-400 uppercase tracking-wider flex items-center gap-2">
-                    <Filter className="w-6 h-6" />
-                    Filters
-                  </h3>
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-gray-400 hover:text-yellow-400 font-bold uppercase tracking-wider transition-colors flex items-center gap-1"
-                  >
-                    <X className="w-4 h-4" />
-                    Clear
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Category Filter */}
-                  <div>
-                    <label className="block text-sm font-black text-white mb-3 uppercase tracking-wider">
-                      Category
-                    </label>
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="w-full px-4 py-3 bg-black border-2 border-gray-700 text-yellow-400 font-bold focus:border-yellow-400 focus:outline-none transition-all"
+          {/* Filters Sidebar */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="lg:w-72 flex-shrink-0 overflow-hidden"
+              >
+                <div className="bg-brand-surface border border-white/8 p-8">
+                  {/* Filter Header */}
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <p className="text-brand-champagne uppercase tracking-[0.25em] text-[9px] mb-1">Refine</p>
+                      <h3 className="text-sm font-light text-white uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Filter className="w-3.5 h-3.5" />
+                        Filters
+                      </h3>
+                    </div>
+                    <button
+                      onClick={clearFilters}
+                      className="text-[10px] text-brand-muted hover:text-brand-champagne uppercase tracking-[0.15em] transition-colors flex items-center gap-1"
                     >
-                      <option value="">All Categories</option>
-                      {categories.map(category => (
-                        <option key={category.name} value={category.name}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                      <X className="w-3 h-3" />
+                      Clear
+                    </button>
                   </div>
 
-                  {/* Subcategory Filter */}
-                  {availableSubcategories.length > 0 && (
+                  <div className="space-y-7">
+                    {/* Category */}
                     <div>
-                      <label className="block text-sm font-black text-white mb-3 uppercase tracking-wider">
-                        Subcategory
+                      <label className="block text-[10px] font-medium text-brand-muted mb-3 uppercase tracking-[0.2em]">
+                        Category
                       </label>
                       <select
-                        value={filters.subcategory}
-                        onChange={(e) => handleFilterChange('subcategory', e.target.value)}
-                        className="w-full px-4 py-3 bg-black border-2 border-gray-700 text-yellow-400 font-bold focus:border-yellow-400 focus:outline-none transition-all"
+                        value={filters.category}
+                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs tracking-wide focus:outline-none transition-colors cursor-pointer appearance-none"
                       >
-                        <option value="">All Subcategories</option>
-                        {availableSubcategories.map(subcategory => (
-                          <option key={subcategory} value={subcategory}>
-                            {subcategory}
+                        <option value="" className="bg-brand-black">All Categories</option>
+                        {categories.map(category => (
+                          <option key={category.name} value={category.name} className="bg-brand-black">
+                            {category.name}
                           </option>
                         ))}
                       </select>
                     </div>
-                  )}
 
-                  {/* Price Range */}
-                  <div>
-                    <label className="block text-sm font-black text-white mb-3 uppercase tracking-wider">
-                      Price Range (LKR)
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.minPrice}
-                        onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                        className="w-full sm:flex-1 px-4 py-3 bg-black border-2 border-gray-700 text-yellow-400 font-bold placeholder-gray-600 focus:border-yellow-400 focus:outline-none transition-all"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.maxPrice}
-                        onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                        className="w-full sm:flex-1 px-4 py-3 bg-black border-2 border-gray-700 text-yellow-400 font-bold placeholder-gray-600 focus:border-yellow-400 focus:outline-none transition-all"
-                      />
+                    {/* Subcategory */}
+                    {availableSubcategories.length > 0 && (
+                      <div>
+                        <label className="block text-[10px] font-medium text-brand-muted mb-3 uppercase tracking-[0.2em]">
+                          Subcategory
+                        </label>
+                        <select
+                          value={filters.subcategory}
+                          onChange={(e) => handleFilterChange('subcategory', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs tracking-wide focus:outline-none transition-colors cursor-pointer appearance-none"
+                        >
+                          <option value="" className="bg-brand-black">All</option>
+                          {availableSubcategories.map(subcategory => (
+                            <option key={subcategory} value={subcategory} className="bg-brand-black">
+                              {subcategory}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Price Range */}
+                    <div>
+                      <label className="block text-[10px] font-medium text-brand-muted mb-3 uppercase tracking-[0.2em]">
+                        Price Range (LKR)
+                      </label>
+                      <div className="flex gap-3">
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={filters.minPrice}
+                          onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs placeholder-white/20 focus:outline-none transition-colors"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Max"
+                          value={filters.maxPrice}
+                          onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs placeholder-white/20 focus:outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Size */}
+                    <div>
+                      <label className="block text-[10px] font-medium text-brand-muted mb-3 uppercase tracking-[0.2em]">
+                        Size
+                      </label>
+                      <select
+                        value={filters.size}
+                        onChange={(e) => handleFilterChange('size', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs tracking-wide focus:outline-none transition-colors cursor-pointer appearance-none"
+                      >
+                        <option value="" className="bg-brand-black">All Sizes</option>
+                        {allSizes.map(size => (
+                          <option key={size} value={size} className="bg-brand-black">{size}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Color */}
+                    <div>
+                      <label className="block text-[10px] font-medium text-brand-muted mb-3 uppercase tracking-[0.2em]">
+                        Color
+                      </label>
+                      <select
+                        value={filters.color}
+                        onChange={(e) => handleFilterChange('color', e.target.value)}
+                        className="w-full px-3 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs tracking-wide focus:outline-none transition-colors cursor-pointer appearance-none"
+                      >
+                        <option value="" className="bg-brand-black">All Colors</option>
+                        {allColors.map(color => (
+                          <option key={color} value={color} className="bg-brand-black">{color}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
-
-                  {/* Size Filter */}
-                  <div>
-                    <label className="block text-sm font-black text-white mb-3 uppercase tracking-wider">
-                      Size
-                    </label>
-                    <select
-                      value={filters.size}
-                      onChange={(e) => handleFilterChange('size', e.target.value)}
-                      className="w-full px-4 py-3 bg-black border-2 border-gray-700 text-yellow-400 font-bold focus:border-yellow-400 focus:outline-none transition-all"
-                    >
-                      <option value="">All Sizes</option>
-                      {allSizes.map(size => (
-                        <option key={size} value={size}>{size}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Color Filter */}
-                  <div>
-                    <label className="block text-sm font-black text-white mb-3 uppercase tracking-wider">
-                      Color
-                    </label>
-                    <select
-                      value={filters.color}
-                      onChange={(e) => handleFilterChange('color', e.target.value)}
-                      className="w-full px-4 py-3 bg-black border-2 border-gray-700 text-yellow-400 font-bold focus:border-yellow-400 focus:outline-none transition-all"
-                    >
-                      <option value="">All Colors</option>
-                      {allColors.map(color => (
-                        <option key={color} value={color}>{color}</option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
-              </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {/* Corner Accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-500/10 to-transparent pointer-events-none" />
-            </div>
-          </motion.div>
-
-          {/* EXPLOSIVE PRODUCTS GRID */}
+          {/* Products Grid */}
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-gradient-to-br from-gray-900 to-black border-2 border-yellow-400 p-16 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border border-white/8 p-20 text-center bg-brand-surface"
               >
-                <div className="text-yellow-400 text-6xl mb-6">⚠️</div>
-                <h3 className="text-3xl font-black text-white mb-4 uppercase">No Products Found</h3>
-                <p className="text-xl text-gray-400 mb-8 font-medium">Try adjusting your filters or search criteria</p>
+                <p className="text-brand-champagne text-4xl mb-6">—</p>
+                <h3 className="text-lg font-light text-white mb-3 uppercase tracking-[0.2em]">No Products Found</h3>
+                <p className="text-brand-muted text-sm mb-8 tracking-wide">
+                  Try adjusting your filters or search criteria
+                </p>
                 <button
                   onClick={clearFilters}
-                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-10 py-4 text-lg font-black uppercase tracking-wider hover:shadow-[0_0_40px_rgba(250,204,21,0.6)] transition-all"
+                  className="inline-flex items-center gap-2 border border-brand-champagne/40 text-brand-champagne px-8 py-3 text-xs font-medium uppercase tracking-[0.18em] hover:bg-brand-champagne hover:text-brand-black transition-all duration-300"
                 >
                   Clear All Filters
                 </button>
               </motion.div>
             ) : (
-              <div className={`grid gap-8 ${viewMode === 'grid'
-                ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
-                : 'grid-cols-1'
-                }`}>
+              <motion.div
+                layout
+                className={`grid gap-6 ${
+                  viewMode === 'grid'
+                    ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+                    : 'grid-cols-1'
+                }`}
+              >
                 {filteredProducts.map((product, index) => (
                   <motion.div
                     key={product.id}
-                    initial={{ opacity: 0, y: 50 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="group"
+                    transition={{ delay: index * 0.04, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <ProductCard product={product} />
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
         </div>

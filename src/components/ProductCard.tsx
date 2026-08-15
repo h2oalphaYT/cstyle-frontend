@@ -63,7 +63,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <motion.div
         whileHover={{ y: -6 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="relative flex flex-col h-full overflow-hidden bg-white dark:bg-gray-900 rounded-none shadow-md hover:shadow-2xl transition-shadow duration-400"
+        className="relative flex flex-col h-full overflow-hidden bg-brand-surface border border-white/6 rounded-none transition-all duration-400"
         onMouseEnter={() => {
           setIsHovered(true);
           if (product.images.length > 1) setImageIndex(1);
@@ -113,12 +113,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {/* ── Badges ── */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
             {product.isNew && (
-              <span className="bg-brand-gold text-brand-black text-[10px] px-2.5 py-0.5 font-black uppercase tracking-widest">
+              <span className="bg-brand-champagne text-brand-black text-[9px] px-2 py-0.5 font-medium uppercase tracking-[0.2em]">
                 New
               </span>
             )}
             {product.originalPrice && (
-              <span className="bg-red-600 text-white text-[10px] px-2.5 py-0.5 font-black uppercase tracking-widest">
+              <span className="bg-white/10 text-white backdrop-blur-sm border border-white/20 text-[9px] px-2 py-0.5 font-medium uppercase tracking-[0.2em]">
                 Sale
               </span>
             )}
@@ -168,7 +168,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               animate={{ y: isHovered ? 0 : 12, opacity: isHovered ? 1 : 0 }}
               transition={{ duration: 0.28, delay: 0.14 }}
               onClick={handleAddToCart}
-              className="flex items-center gap-2 bg-brand-gold text-brand-black text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded-full shadow-xl hover:bg-yellow-400 transition-all duration-200"
+              className="flex items-center gap-2 bg-brand-canvas text-brand-black text-xs font-medium uppercase tracking-widest px-5 py-2.5 rounded-full shadow-xl hover:bg-brand-champagne transition-all duration-200"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
               Quick Shop
@@ -185,9 +185,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <ZoomIn className="w-4 h-4 text-white" />
           </motion.div>
 
-          {/* Gold bottom sweep bar */}
+          {/* Champagne bottom sweep bar */}
           <motion.div
-            className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-yellow-400 via-brand-gold to-yellow-600"
+            className="absolute bottom-0 left-0 right-0 h-px bg-brand-champagne"
             initial={{ scaleX: 0 }}
             animate={{ scaleX: isHovered ? 1 : 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -196,14 +196,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* ── CARD INFO ── */}
-        <div className="flex flex-col flex-1 px-4 pt-4 pb-5 bg-white dark:bg-gray-900">
+        <div className="flex flex-col flex-1 px-4 pt-4 pb-5 bg-brand-surface">
           {/* Category */}
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.18em] mb-1 font-semibold">
+          <p className="text-[10px] text-brand-champagne uppercase tracking-[0.2em] mb-1 font-light">
             {product.category}
           </p>
 
-          {/* Name — always 2 lines tall so titles don't vary card height */}
-          <h3 className="text-sm font-bold font-poppins text-gray-900 dark:text-white mb-2 leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-brand-gold transition-colors duration-200">
+          {/* Name */}
+          <h3 className="text-xs font-light text-white uppercase tracking-[0.15em] mb-2 leading-snug line-clamp-2 min-h-[2.25rem] group-hover:text-brand-champagne transition-colors duration-200">
             {product.name}
           </h3>
 
@@ -228,11 +228,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {/* Price + Color swatches — fixed min-height so sale/no-sale cards align */}
           <div className="flex items-center justify-between min-h-[2.25rem]">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-lg font-black text-brand-gold">
+              <span className="text-sm font-light text-white">
                 {formatPrice(product.price)}
               </span>
               {product.originalPrice && (
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs text-brand-muted line-through">
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
