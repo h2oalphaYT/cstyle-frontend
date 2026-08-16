@@ -1,13 +1,125 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cStyle Modern E-commerce Website</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <!-- ═══════════════════════════════════════════════
+       CHARSET & VIEWPORT
+  ═══════════════════════════════════════════════ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ═══════════════════════════════════════════════
+       FAVICON & THEME
+  ═══════════════════════════════════════════════ -->
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <meta name="theme-color" content="#D4AF37" />
+  <meta name="msapplication-TileColor" content="#0D0D0D" />
+
+  <!-- ═══════════════════════════════════════════════
+       PRIMARY META — HOMEPAGE
+       (Per-page overrides injected via react-helmet-async)
+  ═══════════════════════════════════════════════ -->
+  <title>CStyle Collective | Ladies | MEN | Designer Fashion &amp; Trendy Clothing</title>
+  <meta name="description"
+    content="Discover the latest ladies designer fashion at CStyle Collective. Shop trendy dresses, tops, and premium designer wear. Free shipping on qualifying orders. Shop cstyle now." />
+  <meta name="keywords"
+    content="cstyle, cstyle collective, ladies fashion, designer wear, trendy clothing, women's dresses, women tops, fashion online shop, Sri Lanka fashion, cstylecollective" />
+  <meta name="author" content="CStyle Collective" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://www.cstylecollective.com/" />
+
+  <!-- ═══════════════════════════════════════════════
+       OPEN GRAPH — HOMEPAGE
+  ═══════════════════════════════════════════════ -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CStyle Collective" />
+  <meta property="og:title" content="CStyle Collective | Ladies Designer Fashion &amp; Trendy Clothing" />
+  <meta property="og:description"
+    content="Discover the latest ladies designer fashion at CStyle Collective. Shop trendy dresses, tops, and premium designer wear." />
+  <meta property="og:url" content="https://www.cstylecollective.com/" />
+  <meta property="og:image" content="https://www.cstylecollective.com/og-homepage.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="CStyle Collective — Ladies Designer Fashion" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- ═══════════════════════════════════════════════
+       TWITTER CARD — HOMEPAGE
+  ═══════════════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@cstylecollective" />
+  <meta name="twitter:creator" content="@cstylecollective" />
+  <meta name="twitter:title" content="CStyle Collective | Ladies Designer Fashion &amp; Trendy Clothing" />
+  <meta name="twitter:description"
+    content="Discover the latest ladies designer fashion at CStyle Collective. Shop trendy dresses, tops, and premium designer wear." />
+  <meta name="twitter:image" content="https://www.cstylecollective.com/og-homepage.jpg" />
+  <meta name="twitter:image:alt" content="CStyle Collective — Ladies Designer Fashion" />
+
+  <!-- ═══════════════════════════════════════════════
+       STRUCTURED DATA — ORGANIZATION + WEBSITE
+       (Global schema baked into the HTML shell)
+  ═══════════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.cstylecollective.com/#organization",
+        "name": "CStyle Collective",
+        "alternateName": ["cstyle", "cstyle collective"],
+        "url": "https://www.cstylecollective.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.cstylecollective.com/logo.png",
+          "width": 400,
+          "height": 120
+        },
+        "description": "CStyle Collective is a premium ladies fashion e-commerce brand offering designer wear, trendy dresses, tops and curated clothing collections.",
+        "foundingDate": "2024",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "email": "support@cstylecollective.com",
+          "availableLanguage": ["English"]
+        },
+        "sameAs": [
+          "https://www.instagram.com/cstylecollective",
+          "https://www.facebook.com/cstylecollective",
+          "https://twitter.com/cstylecollective",
+          "https://www.tiktok.com/@cstylecollective"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.cstylecollective.com/#website",
+        "url": "https://www.cstylecollective.com",
+        "name": "CStyle Collective",
+        "description": "Ladies Designer Fashion & Trendy Clothing",
+        "publisher": {
+          "@id": "https://www.cstylecollective.com/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.cstylecollective.com/shop?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        },
+        "inLanguage": "en-US"
+      }
+    ]
+  }
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

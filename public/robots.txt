@@ -1,0 +1,39 @@
+# ────────────────────────────────────────────────
+# robots.txt — CStyle Collective
+# https://www.cstylecollective.com
+# ────────────────────────────────────────────────
+
+# Allow all crawlers on public content
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /product/
+Allow: /about
+Allow: /contact
+
+# Block internal / transactional routes
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /auth
+Disallow: /wishlist
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin/*
+
+# Block URL parameters that generate duplicate content
+Disallow: /*?sort=
+Disallow: /*?page=
+Disallow: /*?ref=
+Disallow: /*?utm_
+
+# Block bare search query params (allow base /shop)
+Disallow: /shop?q=
+Disallow: /shop?color=
+Disallow: /shop?size=
+
+# Crawl-delay for non-Google bots
+Crawl-delay: 2
+
+# Sitemap location
+Sitemap: https://www.cstylecollective.com/sitemap.xml
