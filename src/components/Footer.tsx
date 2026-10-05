@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ArrowUp, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { errorMessage, http } from '../api/client';
+import { useNotify } from '../context/NotificationContext';
 
 const Footer: React.FC = () => {
+  const notify = useNotify();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -24,12 +27,17 @@ const Footer: React.FC = () => {
     });
   };
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail) return;
-    setSubscribed(true);
-    setNewsletterEmail('');
-    setTimeout(() => setSubscribed(false), 4000);
+    try {
+      await http.post('/newsletter', { email: newsletterEmail });
+      setSubscribed(true);
+      setNewsletterEmail('');
+      setTimeout(() => setSubscribed(false), 4000);
+    } catch (err) {
+      notify.error('Subscription failed', errorMessage(err));
+    }
   };
 
   return (
@@ -86,17 +94,17 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Men" className="text-brand-muted hover:text-white uppercase tracking-[0.15em] transition-colors duration-300">
+                <Link to="/shop?gender=men" className="text-brand-muted hover:text-white uppercase tracking-[0.15em] transition-colors duration-300">
                   Men&apos;s Apparel
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Women" className="text-brand-muted hover:text-white uppercase tracking-[0.15em] transition-colors duration-300">
+                <Link to="/shop?gender=women" className="text-brand-muted hover:text-white uppercase tracking-[0.15em] transition-colors duration-300">
                   Women&apos;s Apparel
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Kids" className="text-brand-muted hover:text-white uppercase tracking-[0.15em] transition-colors duration-300">
+                <Link to="/shop?gender=kids" className="text-brand-muted hover:text-white uppercase tracking-[0.15em] transition-colors duration-300">
                   Kids Collection
                 </Link>
               </li>

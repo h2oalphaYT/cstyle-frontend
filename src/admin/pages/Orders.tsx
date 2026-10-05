@@ -1,267 +1,200 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Table, Tag, Space, Button, Input, Select, Modal, Descriptions, Badge } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { App, Button, Card, Descriptions, Drawer, Input, Select, Space, Table, Tag, Timeline } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { SearchOutlined, EyeOutlined, PrinterOutlined } from '@ant-design/icons';
+import { EyeOutlined, PrinterOutlined, ReloadOutlined } from '@ant-design/icons';
+import { errorMessage, ordersApi, type Order, type OrderStatus, type PaymentStatus } from '../../api';
+import SafeImage from '../../components/SafeImage';
 
-const { Option } = Select;
-
-interface Order {
-    key: string;
-    orderId: string;
-    customer: string;
-    date: string;
-    status: 'pending' | 'processing' | 'shipped' | 'completed' | 'cancelled';
-    amount: number;
-    items: number;
-}
+const STATUSES: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const STATUS_COLOR: Record<OrderStatus, string> = {
+    pending: 'orange', confirmed: 'cyan', processing: 'blue', shipped: 'purple', delivered: 'green', cancelled: 'red',
+};
+const PAYMENT_COLOR: Record<PaymentStatus, string> = { pending: 'default', paid: 'green', failed: 'red', refunded: 'volcano' };
+const money = (n: number) => `Rs ${n.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+const PAGE_SIZE = 20;
 
 const OrdersPage = () => {
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const { message, modal } = App.useApp();
+    const [searchParams] = useSearchParams();
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [status, setStatus] = useState<string | undefined>(searchParams.get('status') || undefined);
+    const [search, setSearch] = useState('');
+    const [selected, setSelected] = useState<Order | null>(null);
+    const [updating, setUpdating] = useState(false);
     const isDarkMode = document.documentElement.classList.contains('dark');
 
-    const orders: Order[] = [
-        {
-            key: '1',
-            orderId: 'ORD-2024-001',
-            customer: 'John Doe',
-            date: '2024-11-06',
-            status: 'completed',
-            amount: 15750,
-            items: 3,
-        },
-        {
-            key: '2',
-            orderId: 'ORD-2024-002',
-            customer: 'Jane Smith',
-            date: '2024-11-06',
-            status: 'processing',
-            amount: 8500,
-            items: 2,
-        },
-        {
-            key: '3',
-            orderId: 'ORD-2024-003',
-            customer: 'Bob Wilson',
-            date: '2024-11-05',
-            status: 'shipped',
-            amount: 12000,
-            items: 4,
-        },
-        {
-            key: '4',
-            orderId: 'ORD-2024-004',
-            customer: 'Alice Brown',
-            date: '2024-11-05',
-            status: 'pending',
-            amount: 4500,
-            items: 1,
-        },
-        {
-            key: '5',
-            orderId: 'ORD-2024-005',
-            customer: 'Charlie Davis',
-            date: '2024-11-04',
-            status: 'cancelled',
-            amount: 9800,
-            items: 2,
-        },
-    ];
+    const load = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await ordersApi.list({ page, limit: PAGE_SIZE, status, search: search || undefined });
+            setOrders(res.data);
+            setTotal(res.pagination?.total || 0);
+        } catch (err) {
+            message.error(errorMessage(err));
+        } finally {
+            setLoading(false);
+        }
+    }, [page, status, search, message]);
 
-    const getStatusColor = (status: string) => {
-        const colors: Record<string, string> = {
-            pending: 'orange',
-            processing: 'blue',
-            shipped: 'cyan',
-            completed: 'green',
-            cancelled: 'red',
+    useEffect(() => {
+        const t = setTimeout(load, 250);
+        return () => clearTimeout(t);
+    }, [load]);
+
+    const update = async (order: Order, body: { orderStatus?: OrderStatus; paymentStatus?: PaymentStatus }) => {
+        const go = async () => {
+            setUpdating(true);
+            try {
+                const res = await ordersApi.updateStatus(order.id, body);
+                message.success(`Order ${res.data.orderNumber} updated`);
+                setSelected(prev => (prev?.id === res.data.id ? res.data : prev));
+                load();
+            } catch (err) {
+                message.error(errorMessage(err));
+            } finally {
+                setUpdating(false);
+            }
         };
-        return colors[status] || 'default';
+        if (body.orderStatus === 'cancelled') {
+            modal.confirm({
+                title: `Cancel order ${order.orderNumber}?`,
+                content: 'Items go back into stock and any coupon use is released. This cannot be undone.',
+                okType: 'danger',
+                okText: 'Cancel order',
+                onOk: go,
+            });
+        } else {
+            await go();
+        }
+    };
+
+    // Statuses an order may move to from its current one.
+    const nextStatuses = (o: Order) => {
+        if (o.orderStatus === 'cancelled') return [];
+        if (o.orderStatus === 'delivered') return ['cancelled'] as OrderStatus[];
+        return STATUSES.filter(s => s === 'cancelled' || STATUSES.indexOf(s) > STATUSES.indexOf(o.orderStatus));
     };
 
     const columns: ColumnsType<Order> = [
-        {
-            title: 'Order ID',
-            dataIndex: 'orderId',
-            key: 'orderId',
-            render: (text: string) => <span className="font-mono font-bold">{text}</span>,
-        },
+        { title: 'Order', dataIndex: 'orderNumber', width: 120, render: (n: string) => <span className="font-semibold">{n}</span> },
         {
             title: 'Customer',
-            dataIndex: 'customer',
-            key: 'customer',
+            render: (_, o) => <div><div className="font-medium">{o.customer.name}</div><div className="text-xs text-gray-500">{o.customer.email}{o.user ? '' : ' · guest'}</div></div>,
+        },
+        { title: 'Date', dataIndex: 'createdAt', width: 120, render: (d: string) => new Date(d).toLocaleDateString() },
+        { title: 'Items', width: 70, render: (_, o) => o.items.reduce((s, i) => s + i.quantity, 0) },
+        { title: 'Total', dataIndex: 'total', width: 120, render: (t: number) => <span className="font-semibold">{money(t)}</span> },
+        {
+            title: 'Payment', width: 140,
+            render: (_, o) => <Space direction="vertical" size={0}><Tag color={PAYMENT_COLOR[o.paymentStatus]}>{o.paymentStatus.toUpperCase()}</Tag><span className="text-xs text-gray-500">{o.paymentMethod === 'cod' ? 'Cash on delivery' : 'Bank transfer'}</span></Space>,
         },
         {
-            title: 'Date',
-            dataIndex: 'date',
-            key: 'date',
-            sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            filters: [
-                { text: 'Pending', value: 'pending' },
-                { text: 'Processing', value: 'processing' },
-                { text: 'Shipped', value: 'shipped' },
-                { text: 'Completed', value: 'completed' },
-                { text: 'Cancelled', value: 'cancelled' },
-            ],
-            onFilter: (value, record) => record.status === value,
-            render: (status: string) => (
-                <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>
+            title: 'Status', width: 170,
+            render: (_, o) => (
+                <Select
+                    size="small"
+                    value={o.orderStatus}
+                    disabled={!nextStatuses(o).length || updating}
+                    onChange={(v) => update(o, { orderStatus: v })}
+                    className="w-36"
+                    options={[o.orderStatus, ...nextStatuses(o)].map(s => ({ value: s, label: <Tag color={STATUS_COLOR[s]} className="m-0">{s.toUpperCase()}</Tag> }))}
+                />
             ),
         },
-        {
-            title: 'Items',
-            dataIndex: 'items',
-            key: 'items',
-        },
-        {
-            title: 'Total Amount',
-            dataIndex: 'amount',
-            key: 'amount',
-            sorter: (a, b) => a.amount - b.amount,
-            render: (amount: number) => <span className="font-bold">Rs {amount.toLocaleString()}</span>,
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-                <Space size="small">
-                    <Button
-                        type="text"
-                        icon={<EyeOutlined />}
-                        className="text-brand-gold hover:text-brand-gold-dark"
-                        onClick={() => setSelectedOrder(record)}
-                    >
-                        View
-                    </Button>
-                    <Button
-                        type="text"
-                        icon={<PrinterOutlined />}
-                        className="text-blue-500 hover:text-blue-600"
-                    >
-                        Print
-                    </Button>
-                </Space>
-            ),
-        },
+        { title: '', width: 60, render: (_, o) => <Button type="text" icon={<EyeOutlined />} onClick={() => setSelected(o)} aria-label="View order" /> },
     ];
 
     return (
         <div className="space-y-6">
-            {/* Page Header */}
-            <div className="flex items-center justify-between">
-                <motion.h1
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`text-3xl font-bold font-poppins ${isDarkMode ? 'text-white' : 'text-brand-black'}`}
-                >
-                    Orders Management
-                </motion.h1>
-                <div className="flex items-center space-x-3">
-                    <Badge count={orders.filter(o => o.status === 'pending').length} className="mr-2">
-                        <Button size="large">Pending Orders</Button>
-                    </Badge>
+            <div className="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Orders</h1>
+                    <p className="text-gray-500 m-0">{total} order{total === 1 ? '' : 's'}</p>
                 </div>
+                <Button icon={<ReloadOutlined />} onClick={load}>Refresh</Button>
             </div>
 
-            {/* Filters */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                    } border rounded-xl p-4 shadow-lg`}
-            >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Input
-                        placeholder="Search orders..."
-                        prefix={<SearchOutlined />}
-                        size="large"
-                        className={isDarkMode ? 'bg-gray-900 border-gray-600' : ''}
-                    />
-                    <Select placeholder="Status" size="large" className="w-full">
-                        <Option value="">All Status</Option>
-                        <Option value="pending">Pending</Option>
-                        <Option value="processing">Processing</Option>
-                        <Option value="shipped">Shipped</Option>
-                        <Option value="completed">Completed</Option>
-                        <Option value="cancelled">Cancelled</Option>
-                    </Select>
-                    <Select placeholder="Date Range" size="large" className="w-full">
-                        <Option value="today">Today</Option>
-                        <Option value="week">This Week</Option>
-                        <Option value="month">This Month</Option>
-                    </Select>
-                    <Select placeholder="Sort By" size="large" className="w-full">
-                        <Option value="date">Date</Option>
-                        <Option value="amount">Amount</Option>
-                        <Option value="status">Status</Option>
-                    </Select>
+            <Card className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`}>
+                <div className="flex flex-wrap gap-3 mb-4">
+                    <Input.Search allowClear placeholder="Order number, name, email, phone" value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full md:w-80" />
+                    <Select allowClear placeholder="All statuses" value={status} onChange={(v) => { setStatus(v); setPage(1); }} className="w-44"
+                        options={STATUSES.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))} />
                 </div>
-            </motion.div>
+                <Table rowKey="id" columns={columns} dataSource={orders} loading={loading} scroll={{ x: 1000 }}
+                    pagination={{ current: page, pageSize: PAGE_SIZE, total, onChange: setPage, showTotal: (t) => `${t} orders` }} />
+            </Card>
 
-            {/* Orders Table */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+            <Drawer
+                title={selected ? `Order ${selected.orderNumber}` : ''}
+                open={!!selected}
+                onClose={() => setSelected(null)}
+                width={Math.min(720, typeof window !== 'undefined' ? window.innerWidth : 720)}
+                extra={<Button icon={<PrinterOutlined />} onClick={() => window.print()}>Print</Button>}
             >
-                <Table
-                    columns={columns}
-                    dataSource={orders}
-                    pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Total ${total} orders`,
-                    }}
-                    className={`${isDarkMode ? 'dark-table' : ''}`}
-                />
-            </motion.div>
+                {selected && (
+                    <div className="space-y-6">
+                        <Space wrap>
+                            <span>Status:</span>
+                            <Select value={selected.orderStatus} disabled={!nextStatuses(selected).length || updating} className="w-40"
+                                onChange={(v) => update(selected, { orderStatus: v })}
+                                options={[selected.orderStatus, ...nextStatuses(selected)].map(s => ({ value: s, label: s.toUpperCase() }))} />
+                            <span>Payment:</span>
+                            <Select value={selected.paymentStatus} disabled={updating} className="w-36"
+                                onChange={(v) => update(selected, { paymentStatus: v })}
+                                options={(['pending', 'paid', 'failed', 'refunded'] as PaymentStatus[]).map(s => ({ value: s, label: s.toUpperCase() }))} />
+                        </Space>
 
-            {/* Order Detail Modal */}
-            <Modal
-                title={<span className="text-xl font-bold">Order Details</span>}
-                open={!!selectedOrder}
-                onCancel={() => setSelectedOrder(null)}
-                footer={[
-                    <Button key="close" onClick={() => setSelectedOrder(null)}>
-                        Close
-                    </Button>,
-                    <Button
-                        key="print"
-                        type="primary"
-                        icon={<PrinterOutlined />}
-                        className="bg-brand-gold hover:bg-brand-gold-dark border-0 text-brand-black"
-                    >
-                        Print Invoice
-                    </Button>,
-                ]}
-                width={700}
-            >
-                {selectedOrder && (
-                    <Descriptions bordered column={2} className="mt-4">
-                        <Descriptions.Item label="Order ID" span={2}>
-                            <span className="font-mono font-bold">{selectedOrder.orderId}</span>
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Customer">{selectedOrder.customer}</Descriptions.Item>
-                        <Descriptions.Item label="Date">{selectedOrder.date}</Descriptions.Item>
-                        <Descriptions.Item label="Status">
-                            <Tag color={getStatusColor(selectedOrder.status)}>
-                                {selectedOrder.status.toUpperCase()}
-                            </Tag>
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Items">{selectedOrder.items}</Descriptions.Item>
-                        <Descriptions.Item label="Total Amount" span={2}>
-                            <span className="text-lg font-bold text-brand-gold">
-                                Rs {selectedOrder.amount.toLocaleString()}
-                            </span>
-                        </Descriptions.Item>
-                    </Descriptions>
+                        <Descriptions bordered size="small" column={1}>
+                            <Descriptions.Item label="Customer">{selected.customer.name}</Descriptions.Item>
+                            <Descriptions.Item label="Email">{selected.customer.email}</Descriptions.Item>
+                            <Descriptions.Item label="Phone">{selected.customer.phone || '—'}</Descriptions.Item>
+                            <Descriptions.Item label="Ship to">
+                                {selected.shippingAddress.fullName}<br />
+                                {selected.shippingAddress.line1}{selected.shippingAddress.line2 ? `, ${selected.shippingAddress.line2}` : ''}<br />
+                                {[selected.shippingAddress.city, selected.shippingAddress.state, selected.shippingAddress.postalCode].filter(Boolean).join(', ')}, {selected.shippingAddress.country}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Payment">{selected.paymentMethod === 'cod' ? 'Cash on delivery' : 'Bank transfer'}</Descriptions.Item>
+                            {selected.notes && <Descriptions.Item label="Notes">{selected.notes}</Descriptions.Item>}
+                            <Descriptions.Item label="Placed">{new Date(selected.createdAt).toLocaleString()}</Descriptions.Item>
+                        </Descriptions>
+
+                        <Table
+                            rowKey="_id"
+                            size="small"
+                            pagination={false}
+                            dataSource={selected.items}
+                            columns={[
+                                { title: '', dataIndex: 'image', width: 56, render: (src: string) => <SafeImage src={src} alt="" wrapperClassName="w-10 h-12" className="w-full h-full object-cover" /> },
+                                { title: 'Item', render: (_, i) => <div><div>{i.name}</div><div className="text-xs text-gray-500">{[i.sku, i.size, i.color].filter(Boolean).join(' · ')}</div></div> },
+                                { title: 'Qty', dataIndex: 'quantity', width: 50 },
+                                { title: 'Price', dataIndex: 'unitPrice', width: 100, render: money },
+                                { title: 'Total', dataIndex: 'lineTotal', width: 110, render: money },
+                            ]}
+                            summary={() => (
+                                <>
+                                    <Table.Summary.Row><Table.Summary.Cell index={0} colSpan={4} align="right">Subtotal</Table.Summary.Cell><Table.Summary.Cell index={1}>{money(selected.subtotal)}</Table.Summary.Cell></Table.Summary.Row>
+                                    {selected.discount > 0 && <Table.Summary.Row><Table.Summary.Cell index={0} colSpan={4} align="right">Discount ({selected.coupon?.code})</Table.Summary.Cell><Table.Summary.Cell index={1}>−{money(selected.discount)}</Table.Summary.Cell></Table.Summary.Row>}
+                                    <Table.Summary.Row><Table.Summary.Cell index={0} colSpan={4} align="right">Shipping</Table.Summary.Cell><Table.Summary.Cell index={1}>{money(selected.shipping)}</Table.Summary.Cell></Table.Summary.Row>
+                                    <Table.Summary.Row><Table.Summary.Cell index={0} colSpan={4} align="right"><strong>Total</strong></Table.Summary.Cell><Table.Summary.Cell index={1}><strong>{money(selected.total)}</strong></Table.Summary.Cell></Table.Summary.Row>
+                                </>
+                            )}
+                        />
+
+                        <div>
+                            <h4 className="font-semibold mb-3">History</h4>
+                            <Timeline items={selected.statusHistory.map(h => ({
+                                color: STATUS_COLOR[h.status],
+                                children: <span><Tag color={STATUS_COLOR[h.status]}>{h.status.toUpperCase()}</Tag>{new Date(h.at).toLocaleString()}{h.note ? ` — ${h.note}` : ''}</span>,
+                            }))} />
+                        </div>
+                    </div>
                 )}
-            </Modal>
+            </Drawer>
         </div>
     );
 };

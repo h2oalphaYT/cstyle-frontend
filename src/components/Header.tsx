@@ -6,26 +6,29 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useTheme } from '../context/ThemeContext';
+import { couponsApi } from '../api';
+import SearchBox from './SearchBox';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [promoCodes, setPromoCodes] = useState<{ code: string; desc: string }[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { totalItems } = useCart();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { items: wishlistItems } = useWishlist();
-  const { theme, currency, toggleTheme, toggleCurrency } = useTheme();
+  const { theme, currency, toggleTheme, toggleCurrency, formatPrice } = useTheme();
   const navigate = useNavigate();
 
-  const promoCodes = [
-    { code: 'CSTYLE50', desc: '50% OFF First Order' },
-    { code: 'MEGA30', desc: '30% OFF Everything' },
-    { code: 'FREESHIP', desc: 'FREE SHIPPING' }
-  ];
+  // Active coupon codes come from the admin-managed coupon list.
+  useEffect(() => {
+    couponsApi.publicList()
+      .then(res => setPromoCodes(res.data.map(c => ({ code: c.code, desc: c.description }))))
+      .catch(() => setPromoCodes([]));
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,6 +40,7 @@ const Header = () => {
 
   // Auto-rotate promo codes
   useEffect(() => {
+    if (promoCodes.length < 2) return undefined;
     const interval = setInterval(() => {
       setCurrentPromoIndex((prev) => (prev + 1) % promoCodes.length);
     }, 4000);
@@ -44,19 +48,12 @@ const Header = () => {
   }, [promoCodes.length]);
 
   const copyPromoCode = (code: string) => {
-    navigator.clipboard.writeText(code);
+    navigator.clipboard?.writeText(code).catch(() => undefined);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery('');
-      setSearchOpen(false);
-    }
-  };
+  const promo = promoCodes[currentPromoIndex % Math.max(1, promoCodes.length)];
 
   const toggleSearch = () => {
     setSearchOpen(prev => !prev);
@@ -65,8 +62,9 @@ const Header = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    setIsMenuOpen(false);
     navigate('/');
   };
 
@@ -90,41 +88,45 @@ const Header = () => {
               <span className="whitespace-nowrap opacity-80">🇱🇰 Made in Sri Lanka</span>
               <span className="hidden lg:inline text-brand-subtle/40">|</span>
               <span className="hidden lg:inline whitespace-nowrap opacity-70">
-                Free Shipping Over {currency === 'USD' ? '$100' : 'Rs 32,500'}
+                Free Shipping Over {formatPrice(30000)}
               </span>
             </div>
 
             {/* Center - Rotating Promo Codes */}
             <div className="flex items-center space-x-2 mx-4 min-w-0">
-              <Tag className="w-3 h-3 flex-shrink-0 text-brand-champagne" />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentPromoIndex}
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center space-x-2 min-w-0"
-                >
-                  <span className="font-semibold text-brand-subtle whitespace-nowrap truncate tracking-[0.15em]">
-                    {promoCodes[currentPromoIndex].code}
-                  </span>
-                  <span className="hidden sm:inline text-xs opacity-60 truncate">
-                    — {promoCodes[currentPromoIndex].desc}
-                  </span>
-                  <button
-                    onClick={() => copyPromoCode(promoCodes[currentPromoIndex].code)}
-                    className="flex-shrink-0 ml-1 p-1 hover:text-brand-champagne rounded transition-colors"
-                    aria-label="Copy promo code"
-                  >
-                    {copiedCode === promoCodes[currentPromoIndex].code ? (
-                      <Check className="w-3 h-3 text-brand-champagne" />
-                    ) : (
-                      <Copy className="w-3 h-3" />
-                    )}
-                  </button>
-                </motion.div>
-              </AnimatePresence>
+              {promo && (
+                <>
+                  <Tag className="w-3 h-3 flex-shrink-0 text-brand-champagne" />
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={promo.code}
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center space-x-2 min-w-0"
+                    >
+                      <span className="font-semibold text-brand-subtle whitespace-nowrap truncate tracking-[0.15em]">
+                        {promo.code}
+                      </span>
+                      <span className="hidden sm:inline text-xs opacity-60 truncate normal-case tracking-normal">
+                        — {promo.desc}
+                      </span>
+                      <button
+                        onClick={() => copyPromoCode(promo.code)}
+                        className="flex-shrink-0 ml-1 p-1 hover:text-brand-champagne rounded transition-colors"
+                        aria-label="Copy promo code"
+                      >
+                        {copiedCode === promo.code ? (
+                          <Check className="w-3 h-3 text-brand-champagne" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
+                    </motion.div>
+                  </AnimatePresence>
+                </>
+              )}
             </div>
 
             {/* Right Side - Currency Toggle */}
@@ -190,24 +192,20 @@ const Header = () => {
             <div className="relative flex items-center">
               <AnimatePresence>
                 {searchOpen && (
-                  <motion.form
+                  <motion.div
                     key="search-form"
                     initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 200 }}
+                    animate={{ opacity: 1, width: 240 }}
                     exit={{ opacity: 0, width: 0 }}
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    onSubmit={handleSearch}
-                    className="overflow-hidden mr-2"
+                    className="mr-2"
                   >
-                    <input
+                    <SearchBox
                       ref={searchInputRef}
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-transparent border-b border-brand-muted/40 focus:border-brand-champagne text-white placeholder-brand-muted/60 text-xs tracking-[0.12em] py-1 px-0 outline-none transition-colors duration-300"
+                      onDone={() => setSearchOpen(false)}
+                      inputClassName="w-full bg-transparent border-b border-brand-muted/40 focus:border-brand-champagne text-white placeholder-brand-muted/60 text-xs tracking-[0.12em] py-1 px-0 outline-none transition-colors duration-300"
                     />
-                  </motion.form>
+                  </motion.div>
                 )}
               </AnimatePresence>
               <button
@@ -240,9 +238,17 @@ const Header = () => {
                   <span className="text-xs tracking-[0.12em] hidden xl:inline">{user.name}</span>
                 </button>
                 <div className="absolute right-0 top-full mt-3 w-44 bg-brand-surface border border-white/8 shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <Link to="/profile" className="block px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
-                    My Profile
+                  <Link to="/account" className="block px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
+                    My Account
                   </Link>
+                  <Link to="/account/orders" className="block px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
+                    My Orders
+                  </Link>
+                  {isAdmin && (
+                    <Link to="/admin" className="block px-5 py-3 text-xs text-brand-champagne hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
+                      Admin Panel
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors"
@@ -297,20 +303,11 @@ const Header = () => {
 
         {/* Mobile Search */}
         <div className="xl:hidden pb-3">
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-b border-white/10 focus:border-brand-champagne text-white placeholder-brand-muted/60 text-xs tracking-[0.12em] py-2 px-0 outline-none transition-colors duration-300"
-              />
-              <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2">
-                <Search className="w-4 h-4 text-brand-muted hover:text-brand-champagne transition-colors" />
-              </button>
-            </div>
-          </form>
+          <SearchBox
+            showButton
+            onDone={() => setIsMenuOpen(false)}
+            inputClassName="w-full bg-transparent border-b border-white/10 focus:border-brand-champagne text-white placeholder-brand-muted/60 text-xs tracking-[0.12em] py-2 pr-6 px-0 outline-none transition-colors duration-300"
+          />
         </div>
       </div>
 
@@ -353,10 +350,14 @@ const Header = () => {
                 </button>
 
                 {user ? (
-                  <div className="flex flex-col items-center space-y-1.5">
-                    <User className="w-5 h-5 text-brand-muted" />
-                    <span className="text-[10px] tracking-[0.15em] uppercase text-brand-muted">{user.name}</span>
-                  </div>
+                  <Link
+                    to={isAdmin ? '/admin' : '/account'}
+                    className="flex flex-col items-center space-y-1.5 text-brand-muted hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="text-[10px] tracking-[0.15em] uppercase">{isAdmin ? 'Admin' : 'Account'}</span>
+                  </Link>
                 ) : (
                   <Link
                     to="/auth"

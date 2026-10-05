@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Send, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { errorMessage, http } from '../api/client';
+import { useNotify } from '../context/NotificationContext';
 
 interface ContactFormData {
   name: string;
@@ -12,15 +14,20 @@ interface ContactFormData {
 
 const Contact: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ContactFormData>();
+  const notify = useNotify();
 
   const onSubmit = async (data: ContactFormData) => {
-    console.log('Contact form submitted:', data);
-    setIsSubmitted(true);
-    reset();
-    setTimeout(() => {
-      setIsSubmitted(false);
-    }, 5000);
+    try {
+      await http.post('/contact', data);
+      setIsSubmitted(true);
+      reset();
+      setTimeout(() => {
+        setIsSubmitted(false);
+      }, 5000);
+    } catch (err) {
+      notify.error('Message not sent', errorMessage(err));
+    }
   };
 
   const inputClass =
@@ -252,12 +259,13 @@ const Contact: React.FC = () => {
                 {/* Submit */}
                 <motion.button
                   type="submit"
+                  disabled={isSubmitting}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center gap-3 bg-brand-canvas text-brand-black px-10 py-4 text-xs font-medium uppercase tracking-[0.2em] hover:bg-brand-black hover:text-brand-canvas rounded-sm border border-transparent hover:border-brand-canvas transition-all duration-400 group"
+                  className="inline-flex items-center gap-3 bg-brand-canvas text-brand-black px-10 py-4 text-xs font-medium uppercase tracking-[0.2em] hover:bg-brand-black hover:text-brand-canvas rounded-sm border border-transparent hover:border-brand-canvas transition-all duration-400 group disabled:opacity-50"
                   style={{ transition: 'background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease' }}
                 >
                   <Send className="w-3.5 h-3.5" />
-                  Send Message
+                  {isSubmitting ? 'Sending…' : 'Send Message'}
                 </motion.button>
               </form>
             </div>
