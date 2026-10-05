@@ -42,7 +42,7 @@ const Auth: React.FC = () => {
     try {
       const user = await login(data.email, data.password);
       notify.success('Welcome back', user.name);
-      navigate(from || (user.role === 'admin' ? '/admin' : '/'), { replace: true });
+      navigate(from || (user.role === 'admin' ? '/admin' : user.role === 'staff' ? '/admin/hr' : '/'), { replace: true });
     } catch (error) {
       setFormError(errorMessage(error, 'Login failed'));
     }
