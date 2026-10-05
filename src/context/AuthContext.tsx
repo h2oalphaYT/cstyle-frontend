@@ -5,6 +5,9 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  /** Admin or staff user with at least one back-office permission. */
+  isBackOffice: boolean;
+  can: (...permissions: string[]) => boolean;
   /** False until the stored session has been checked with the server. */
   ready: boolean;
   loading: boolean;
@@ -85,6 +88,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     user,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
+    isBackOffice: user?.role === 'admin' || (user?.role === 'staff' && (user.permissions?.length || 0) > 0),
+    can: (...permissions: string[]) => user?.role === 'admin' || permissions.some(p => user?.permissions?.includes(p)),
     ready,
     loading,
     login,

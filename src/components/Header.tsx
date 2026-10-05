@@ -18,7 +18,7 @@ const Header = () => {
   const [promoCodes, setPromoCodes] = useState<{ code: string; desc: string }[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { totalItems } = useCart();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isBackOffice } = useAuth();
   const { items: wishlistItems } = useWishlist();
   const { theme, currency, toggleTheme, toggleCurrency, formatPrice } = useTheme();
   const navigate = useNavigate();
@@ -244,9 +244,9 @@ const Header = () => {
                   <Link to="/account/orders" className="block px-5 py-3 text-xs text-brand-muted hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
                     My Orders
                   </Link>
-                  {isAdmin && (
-                    <Link to="/admin" className="block px-5 py-3 text-xs text-brand-champagne hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
-                      Admin Panel
+                  {isBackOffice && (
+                    <Link to={isAdmin ? '/admin' : '/admin/hr'} className="block px-5 py-3 text-xs text-brand-champagne hover:text-white hover:bg-white/5 tracking-[0.1em] uppercase transition-colors">
+                      {isAdmin ? 'Admin Panel' : 'Payroll & HR'}
                     </Link>
                   )}
                   <button

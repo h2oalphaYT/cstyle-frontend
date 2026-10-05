@@ -33,6 +33,8 @@ const InventoryPage = lazy(() => import('./admin/pages/Inventory'));
 const CustomersPage = lazy(() => import('./admin/pages/Customers'));
 const AnalyticsPage = lazy(() => import('./admin/pages/Analytics'));
 const SettingsPage = lazy(() => import('./admin/pages/Settings'));
+// Payroll & HR section, its own chunk.
+const HrRoutes = lazy(() => import('./admin/hr/HrRoutes'));
 
 const StoreLayout = () => (
   <div className="min-h-screen flex flex-col bg-white dark:bg-brand-black transition-colors duration-300">
@@ -44,13 +46,13 @@ const StoreLayout = () => (
   </div>
 );
 
-/** Only logged-in admins reach /admin; everyone else is sent to log in. */
-const RequireAdmin = ({ children }: { children: React.ReactElement }) => {
-  const { ready, isAuthenticated, isAdmin } = useAuth();
+/** Admins and payroll/HR staff reach /admin; everyone else is sent to log in. */
+const RequireBackOffice = ({ children }: { children: React.ReactElement }) => {
+  const { ready, isAuthenticated, isBackOffice } = useAuth();
   const location = useLocation();
   if (!ready) return <div className="min-h-screen bg-brand-black"><Spinner label="Checking access" /></div>;
   if (!isAuthenticated) return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />;
-  if (!isAdmin) {
+  if (!isBackOffice) {
     return (
       <div className="min-h-screen bg-brand-black flex items-center justify-center text-center px-4">
         <div className="space-y-4">
@@ -62,6 +64,12 @@ const RequireAdmin = ({ children }: { children: React.ReactElement }) => {
     );
   }
   return children;
+};
+
+/** Store administration stays with admins; payroll/HR staff are sent to their section. */
+const AdminOnly = () => {
+  const { isAdmin } = useAuth();
+  return isAdmin ? <Outlet /> : <Navigate to="/admin/hr" replace />;
 };
 
 const NotFound = () => (
@@ -104,7 +112,9 @@ function AppContent() {
               </Route>
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+              <Route path="/admin" element={<RequireBackOffice><AdminLayout /></RequireBackOffice>}>
+                <Route path="hr/*" element={<HrRoutes />} />
+                <Route element={<AdminOnly />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
@@ -114,6 +124,7 @@ function AppContent() {
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                </Route>
               </Route>
             </Routes>
           </Suspense>

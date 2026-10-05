@@ -1,4 +1,4 @@
-export type Role = 'customer' | 'admin';
+export type Role = 'customer' | 'admin' | 'staff';
 
 export interface Address {
     _id?: string;
@@ -23,6 +23,11 @@ export interface User {
     addresses: Address[];
     active: boolean;
     createdAt: string;
+    /** Back-office permissions (admins hold all of them). */
+    permissions?: string[];
+    dataScope?: 'all' | 'department' | 'team' | 'own';
+    staffRoleName?: string | null;
+    employee?: string | null;
 }
 
 export interface CategoryRef { _id: string; id?: string; name: string; slug: string }

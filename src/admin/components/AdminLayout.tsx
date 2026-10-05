@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ordersApi } from '../../api';
@@ -24,6 +24,8 @@ import {
     ShopOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import { DownOutlined, RightOutlined, SolutionOutlined } from '@ant-design/icons';
+import { HR_NAV } from '../hr/nav';
 
 const { Header, Sider, Content } = Layout;
 
@@ -43,21 +45,28 @@ const AdminLayout = () => {
     const [search, setSearch] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const { user, logout, isAdmin, can } = useAuth();
+    const inHr = location.pathname.startsWith('/admin/hr');
+    const [hrOpen, setHrOpen] = useState(true);
+    // Payroll & HR menu, limited to what the user's role allows.
+    const hrNav = useMemo(() => HR_NAV
+        .map(s => ({ ...s, items: s.items.filter(i => !i.perms.length || can(...i.perms)) }))
+        .filter(s => s.items.length), [can]);
 
-    // Bell badge shows orders waiting to be confirmed.
+    // Bell badge shows orders waiting to be confirmed (store admins only).
     useEffect(() => {
+        if (!isAdmin) return;
         ordersApi.list({ status: 'pending', limit: 1 })
             .then(res => setPendingOrders(res.pagination?.total || 0))
             .catch(() => setPendingOrders(0));
-    }, [location.pathname]);
+    }, [location.pathname, isAdmin]);
 
     const onProfileMenu: MenuProps['onClick'] = async ({ key }) => {
         if (key === 'logout') {
             await logout();
             navigate('/auth');
         } else if (key === 'settings') {
-            navigate('/admin/settings');
+            navigate(isAdmin ? '/admin/settings' : '/admin/hr/me');
         } else if (key === 'store') {
             navigate('/');
         }
@@ -77,7 +86,7 @@ const AdminLayout = () => {
         };
     }, [isDarkMode]);
 
-    const menuItems: MenuItem[] = [
+    const storeItems: MenuItem[] = [
         { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard', path: '/admin' },
         { key: 'products', icon: <ShoppingOutlined />, label: 'Products', path: '/admin/products' },
         { key: 'categories', icon: <AppstoreOutlined />, label: 'Categories', path: '/admin/categories' },
@@ -88,6 +97,7 @@ const AdminLayout = () => {
         { key: 'analytics', icon: <BarChartOutlined />, label: 'Analytics', path: '/admin/analytics' },
         { key: 'settings', icon: <SettingOutlined />, label: 'Settings', path: '/admin/settings' },
     ];
+    const menuItems = isAdmin ? storeItems : [];
 
     const profileMenuItems: MenuProps['items'] = [
         {
@@ -179,6 +189,37 @@ const AdminLayout = () => {
                             </motion.div>
                         );
                     })}
+
+                    {hrNav.length > 0 && (
+                        <div className="mt-2 pb-6">
+                            {isAdmin && (
+                                <button type="button" onClick={() => setHrOpen(!hrOpen)}
+                                    className={`w-[calc(100%-1rem)] flex items-center ${collapsed ? 'justify-center' : 'justify-between px-6'} py-3 mx-2 rounded-lg ${inHr ? 'text-brand-gold' : isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>
+                                    <span className="flex items-center"><SolutionOutlined className="text-xl" />{!collapsed && <span className="ml-4 font-semibold">Payroll &amp; HR</span>}</span>
+                                    {!collapsed && (hrOpen ? <DownOutlined className="text-xs" /> : <RightOutlined className="text-xs" />)}
+                                </button>
+                            )}
+                            {(hrOpen || !isAdmin) && hrNav.map(section => (
+                                <div key={section.title} className="mt-1">
+                                    {!collapsed && <p className="px-8 pt-3 pb-1 text-[10px] uppercase tracking-wider text-gray-500 m-0">{section.title}</p>}
+                                    {section.items.map(item => {
+                                        const to = `/admin/hr${item.path ? `/${item.path}` : ''}`;
+                                        const isActive = location.pathname === to || (item.path === 'payroll' && location.pathname.startsWith('/admin/hr/payroll/'));
+                                        return (
+                                            <Link to={to} key={to} title={collapsed ? item.label : undefined}>
+                                                <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-start pl-8 pr-4'} py-2 mx-2 rounded-lg text-sm transition-all ${isActive
+                                                    ? 'bg-brand-gold text-brand-black'
+                                                    : isDarkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-brand-black'}`}>
+                                                    <span className="text-base">{item.icon}</span>
+                                                    {!collapsed && <span className="ml-3">{item.label}</span>}
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </nav>
             </Sider>
 
@@ -198,7 +239,7 @@ const AdminLayout = () => {
                         </button>
 
                         {/* Search Bar */}
-                        <Input
+                        {isAdmin && <Input
                             prefix={<SearchOutlined className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />}
                             placeholder="Search products by name or SKU…"
                             value={search}
@@ -208,7 +249,7 @@ const AdminLayout = () => {
                             }}
                             className={`hidden md:flex w-80 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300'
                                 }`}
-                        />
+                        />}
                     </div>
 
                     <div className="flex items-center space-x-6">
@@ -224,11 +265,11 @@ const AdminLayout = () => {
                         </div>
 
                         {/* Notifications */}
-                        <Link to="/admin/orders?status=pending" aria-label={`${pendingOrders} pending orders`}>
+                        {isAdmin && <Link to="/admin/orders?status=pending" aria-label={`${pendingOrders} pending orders`}>
                             <Badge count={pendingOrders} offset={[-5, 5]}>
                                 <BellOutlined className={`text-xl ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-brand-black'} cursor-pointer transition-colors`} />
                             </Badge>
-                        </Link>
+                        </Link>}
 
                         {/* Profile Dropdown */}
                         <Dropdown menu={{ items: profileMenuItems, onClick: onProfileMenu }} placement="bottomRight" arrow>
