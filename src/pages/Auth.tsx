@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, User, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotify } from '../context/NotificationContext';
+import { errorMessage } from '../api/client';
 
 interface LoginFormData {
   email: string;
@@ -22,20 +24,27 @@ const Auth: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login, signup, loading } = useAuth();
+  const notify = useNotify();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const from = location.state?.from?.pathname || '/';
+  // Only allow in-app redirects (never to another site).
+  const requested = searchParams.get('redirect') || location.state?.from?.pathname || '';
+  const from = requested.startsWith('/') && !requested.startsWith('//') ? requested : '';
 
   const loginForm = useForm<LoginFormData>();
   const signupForm = useForm<SignupFormData>();
 
   const onLoginSubmit = async (data: LoginFormData) => {
+    setFormError(null);
     try {
-      await login(data.email, data.password);
-      navigate(from, { replace: true });
+      const user = await login(data.email, data.password);
+      notify.success('Welcome back', user.name);
+      navigate(from || (user.role === 'admin' ? '/admin' : '/'), { replace: true });
     } catch (error) {
-      console.error('Login failed:', error);
+      setFormError(errorMessage(error, 'Login failed'));
     }
   };
 
@@ -48,11 +57,13 @@ const Auth: React.FC = () => {
       return;
     }
 
+    setFormError(null);
     try {
-      await signup(data.email, data.password, data.name);
-      navigate(from, { replace: true });
+      const user = await signup(data.email, data.password, data.name);
+      notify.success('Account created', `Welcome to CStyle, ${user.name}`);
+      navigate(from || '/', { replace: true });
     } catch (error) {
-      console.error('Signup failed:', error);
+      setFormError(errorMessage(error, 'Sign up failed'));
     }
   };
 
@@ -114,6 +125,7 @@ const Auth: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setIsLogin(!isLogin);
+                  setFormError(null);
                   loginForm.reset();
                   signupForm.reset();
                 }}
@@ -123,6 +135,12 @@ const Auth: React.FC = () => {
               </button>
             </p>
           </div>
+
+          {formError && (
+            <p role="alert" className="mb-5 text-xs text-red-300 border border-red-400/30 bg-red-400/5 px-4 py-3 tracking-wide">
+              {formError}
+            </p>
+          )}
 
           {/* Form Switcher */}
           <AnimatePresence mode="wait">
@@ -186,17 +204,10 @@ const Auth: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="h-3.5 w-3.5 accent-brand-champagne bg-transparent border-white/20 rounded-sm"
-                    />
-                    <span className="ml-2 text-brand-muted tracking-wide text-[11px]">Remember me</span>
-                  </label>
-                  <a href="#" className="text-brand-muted hover:text-brand-champagne tracking-wide text-[11px] transition-colors">
-                    Forgot password?
-                  </a>
+                <div className="flex items-center justify-end text-xs pt-1">
+                  <Link to="/contact" className="text-brand-muted hover:text-brand-champagne tracking-wide text-[11px] transition-colors">
+                    Forgot password? Contact us
+                  </Link>
                 </div>
 
                 <motion.button
@@ -373,20 +384,10 @@ const Auth: React.FC = () => {
             )}
           </AnimatePresence>
 
-          {/* Social Login */}
           <div className="mt-6 pt-5 border-t border-white/10 text-center">
-            <p className="text-[9px] text-brand-muted uppercase tracking-[0.2em] mb-3">
-              Or Continue With
+            <p className="text-[10px] text-brand-muted tracking-[0.15em]">
+              Prefer not to sign up? <a href="/shop" className="text-brand-champagne underline">Checkout as a guest</a>
             </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button className="py-2.5 px-4 border border-white/12 text-[11px] font-light uppercase tracking-[0.15em] text-brand-muted hover:text-white hover:border-brand-champagne transition-colors duration-300">
-                Google
-              </button>
-              <button className="py-2.5 px-4 border border-white/12 text-[11px] font-light uppercase tracking-[0.15em] text-brand-muted hover:text-white hover:border-brand-champagne transition-colors duration-300">
-                Facebook
-              </button>
-            </div>
           </div>
         </div>
       </motion.div>

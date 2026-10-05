@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { ordersApi } from '../../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layout, Badge, Dropdown, Avatar, Input, Switch } from 'antd';
+import { App as AntApp, ConfigProvider, Layout, Badge, Dropdown, Avatar, Input, Switch, theme as antTheme } from 'antd';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -18,6 +20,8 @@ import {
     LogoutOutlined,
     MoonOutlined,
     SunOutlined,
+    AppstoreOutlined,
+    ShopOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -31,11 +35,33 @@ interface MenuItem {
 }
 
 const AdminLayout = () => {
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024);
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return localStorage.getItem('admin-theme') === 'dark';
     });
+    const [pendingOrders, setPendingOrders] = useState(0);
+    const [search, setSearch] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
+    // Bell badge shows orders waiting to be confirmed.
+    useEffect(() => {
+        ordersApi.list({ status: 'pending', limit: 1 })
+            .then(res => setPendingOrders(res.pagination?.total || 0))
+            .catch(() => setPendingOrders(0));
+    }, [location.pathname]);
+
+    const onProfileMenu: MenuProps['onClick'] = async ({ key }) => {
+        if (key === 'logout') {
+            await logout();
+            navigate('/auth');
+        } else if (key === 'settings') {
+            navigate('/admin/settings');
+        } else if (key === 'store') {
+            navigate('/');
+        }
+    };
 
     useEffect(() => {
         localStorage.setItem('admin-theme', isDarkMode ? 'dark' : 'light');
@@ -44,12 +70,18 @@ const AdminLayout = () => {
         } else {
             document.documentElement.classList.remove('dark');
         }
+        // Leaving the admin restores the storefront's own theme.
+        return () => {
+            const storeTheme = localStorage.getItem('cstyle-theme') || 'dark';
+            document.documentElement.classList.toggle('dark', storeTheme === 'dark');
+        };
     }, [isDarkMode]);
 
     const menuItems: MenuItem[] = [
         { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard', path: '/admin' },
         { key: 'products', icon: <ShoppingOutlined />, label: 'Products', path: '/admin/products' },
-        { key: 'offers', icon: <TagOutlined />, label: 'Offers', path: '/admin/offers' },
+        { key: 'categories', icon: <AppstoreOutlined />, label: 'Categories', path: '/admin/categories' },
+        { key: 'offers', icon: <TagOutlined />, label: 'Coupons & Banners', path: '/admin/offers' },
         { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Orders', path: '/admin/orders' },
         { key: 'inventory', icon: <InboxOutlined />, label: 'Stock / Inventory', path: '/admin/inventory' },
         { key: 'customers', icon: <UserOutlined />, label: 'Customers', path: '/admin/customers' },
@@ -59,9 +91,9 @@ const AdminLayout = () => {
 
     const profileMenuItems: MenuProps['items'] = [
         {
-            key: 'profile',
-            icon: <UserOutlined />,
-            label: 'Admin Profile',
+            key: 'store',
+            icon: <ShopOutlined />,
+            label: 'View Store',
         },
         {
             key: 'settings',
@@ -80,6 +112,13 @@ const AdminLayout = () => {
     ];
 
     return (
+        <ConfigProvider
+            theme={{
+                algorithm: isDarkMode ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
+                token: { colorPrimary: '#D4AF37', fontFamily: 'Inter, sans-serif' },
+            }}
+        >
+        <AntApp>
         <Layout className="min-h-screen">
             {/* Sidebar */}
             <Sider
@@ -161,8 +200,13 @@ const AdminLayout = () => {
                         {/* Search Bar */}
                         <Input
                             prefix={<SearchOutlined className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />}
-                            placeholder="Search products, orders..."
-                            className={`w-80 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300'
+                            placeholder="Search products by name or SKU…"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onPressEnter={() => {
+                                if (search.trim()) navigate(`/admin/products?search=${encodeURIComponent(search.trim())}`);
+                            }}
+                            className={`hidden md:flex w-80 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300'
                                 }`}
                         />
                     </div>
@@ -180,20 +224,21 @@ const AdminLayout = () => {
                         </div>
 
                         {/* Notifications */}
-                        <Badge count={5} offset={[-5, 5]}>
-                            <BellOutlined className={`text-xl ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-brand-black'} cursor-pointer transition-colors`} />
-                        </Badge>
+                        <Link to="/admin/orders?status=pending" aria-label={`${pendingOrders} pending orders`}>
+                            <Badge count={pendingOrders} offset={[-5, 5]}>
+                                <BellOutlined className={`text-xl ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-brand-black'} cursor-pointer transition-colors`} />
+                            </Badge>
+                        </Link>
 
                         {/* Profile Dropdown */}
-                        <Dropdown menu={{ items: profileMenuItems }} placement="bottomRight" arrow>
+                        <Dropdown menu={{ items: profileMenuItems, onClick: onProfileMenu }} placement="bottomRight" arrow>
                             <div className="flex items-center space-x-3 cursor-pointer">
-                                <Avatar
-                                    size={40}
-                                    src="https://ui-avatars.com/api/?name=Admin&background=D4AF37&color=0D0D0D&bold=true"
-                                />
-                                <div className="hidden md:block">
-                                    <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Admin User</p>
-                                    <p className="text-xs text-gray-500">admin@cstyle.lk</p>
+                                <Avatar size={40} className="bg-brand-gold text-brand-black font-bold">
+                                    {(user?.name || 'A').charAt(0).toUpperCase()}
+                                </Avatar>
+                                <div className="hidden md:block leading-tight">
+                                    <p className={`text-sm font-medium m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>{user?.name}</p>
+                                    <p className="text-xs text-gray-500 m-0">{user?.email}</p>
                                 </div>
                             </div>
                         </Dropdown>
@@ -216,6 +261,8 @@ const AdminLayout = () => {
                 </Content>
             </Layout>
         </Layout>
+        </AntApp>
+        </ConfigProvider>
     );
 };
 

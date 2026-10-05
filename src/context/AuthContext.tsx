@@ -1,19 +1,17 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-}
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { authApi, onUnauthorized, tokenStore, type User } from '../api';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+  isAdmin: boolean;
+  /** False until the stored session has been checked with the server. */
+  ready: boolean;
   loading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  signup: (email: string, password: string, name: string, phone?: string) => Promise<User>;
+  logout: () => Promise<void>;
+  setUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,54 +24,74 @@ export const useAuth = () => {
   return context;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setUser({
-        id: '1',
-        email,
-        name: email.split('@')[0],
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150'
-      });
-      setLoading(false);
-    }, 1000);
-  };
+  // Restore the session from a stored token.
+  useEffect(() => {
+    if (!tokenStore.get()) {
+      setReady(true);
+      return;
+    }
+    authApi.me()
+      .then(res => setUser(res.data))
+      .catch(() => tokenStore.clear())
+      .finally(() => setReady(true));
+  }, []);
 
-  const signup = async (email: string, password: string, name: string) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setUser({
-        id: '1',
-        email,
-        name,
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150'
-      });
-      setLoading(false);
-    }, 1000);
-  };
-
-  const logout = () => {
+  // The API rejected our token (expired / logged out elsewhere).
+  useEffect(() => onUnauthorized(() => {
+    tokenStore.clear();
     setUser(null);
-  };
+  }), []);
 
-  const value: AuthContextType = {
+  const login = useCallback(async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      const res = await authApi.login(email, password);
+      tokenStore.set(res.data.token);
+      setUser(res.data.user);
+      return res.data.user;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const signup = useCallback(async (email: string, password: string, name: string, phone?: string) => {
+    setLoading(true);
+    try {
+      const res = await authApi.register({ email, password, name, phone: phone || undefined });
+      tokenStore.set(res.data.token);
+      setUser(res.data.user);
+      return res.data.user;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      if (tokenStore.get()) await authApi.logout();
+    } catch {
+      // Logging out locally is enough if the server is unreachable.
+    }
+    tokenStore.clear();
+    setUser(null);
+  }, []);
+
+  const value = useMemo<AuthContextType>(() => ({
     user,
     isAuthenticated: !!user,
+    isAdmin: user?.role === 'admin',
+    ready,
+    loading,
     login,
     signup,
     logout,
-    loading
-  };
+    setUser,
+  }), [user, ready, loading, login, signup, logout]);
 
   return (
     <AuthContext.Provider value={value}>

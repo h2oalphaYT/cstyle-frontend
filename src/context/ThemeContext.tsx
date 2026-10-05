@@ -26,8 +26,8 @@ interface ThemeProviderProps {
     children: ReactNode;
 }
 
-// Exchange rate: 1 USD = 325 LKR (approximate)
-const USD_TO_LKR = 325;
+// Prices are stored in LKR. USD is an approximate display conversion only; orders are charged in LKR.
+const LKR_PER_USD = Number(import.meta.env.VITE_LKR_PER_USD) || 300;
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>(() => {
@@ -61,19 +61,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         setCurrency(prev => prev === 'LKR' ? 'USD' : 'LKR');
     };
 
-    const convertPrice = (priceInUSD: number): number => {
+    const convertPrice = (priceInLKR: number): number => {
         if (currency === 'USD') {
-            return priceInUSD;
+            return priceInLKR / LKR_PER_USD;
         }
-        return priceInUSD * USD_TO_LKR;
+        return priceInLKR;
     };
 
-    const formatPrice = (priceInUSD: number): string => {
-        const converted = convertPrice(priceInUSD);
+    const formatPrice = (priceInLKR: number): string => {
+        const converted = convertPrice(priceInLKR || 0);
         if (currency === 'USD') {
             return `$${converted.toFixed(2)}`;
         }
-        return `Rs ${converted.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `Rs ${converted.toLocaleString('en-LK', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
     };
 
     const value: ThemeContextType = {
