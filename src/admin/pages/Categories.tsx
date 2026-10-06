@@ -16,7 +16,6 @@ const CategoriesPage = () => {
     const [saving, setSaving] = useState(false);
     const [form] = Form.useForm();
     const fileInput = useRef<HTMLInputElement>(null);
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -90,7 +89,7 @@ const CategoriesPage = () => {
 
     const columns: ColumnsType<Category> = [
         { title: 'Image', dataIndex: 'image', width: 80, render: (src: string, c) => <SafeImage src={src} alt={c.name} wrapperClassName="w-12 h-14 rounded" className="w-full h-full object-cover" /> },
-        { title: 'Name', dataIndex: 'name', render: (n: string, c) => <div><div className="font-medium">{n}</div><div className="text-xs text-gray-500">/{c.slug}</div></div> },
+        { title: 'Name', dataIndex: 'name', render: (n: string, c) => <div><div className="font-medium">{n}</div><div className="text-xs text-admin-muted">/{c.slug}</div></div> },
         { title: 'Products', dataIndex: 'productCount', width: 100 },
         { title: 'Order', dataIndex: 'sortOrder', width: 80 },
         { title: 'Status', dataIndex: 'active', width: 100, render: (a: boolean) => <Tag color={a ? 'success' : 'default'}>{a ? 'Active' : 'Hidden'}</Tag> },
@@ -107,10 +106,10 @@ const CategoriesPage = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
-                <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Categories</h1>
-                <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openEditor(null)} className="bg-brand-gold border-0 text-brand-black font-semibold">Add Category</Button>
+                <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Categories</h1>
+                <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openEditor(null)} className="font-semibold">Add Category</Button>
             </div>
-            <Card className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`}>
+            <Card className="rounded-xl">
                 <Table rowKey="id" columns={columns} dataSource={items} loading={loading} pagination={false} scroll={{ x: 600 }} />
             </Card>
 

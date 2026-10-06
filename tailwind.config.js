@@ -5,6 +5,16 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Admin panel colours follow the light/dark toggle (values in index.css).
+        admin: {
+          layout: 'var(--admin-layout)',
+          surface: 'var(--admin-surface)',
+          hover: 'var(--admin-hover)',
+          border: 'var(--admin-border)',
+          text: 'var(--admin-text)',
+          muted: 'var(--admin-muted)',
+          accent: 'var(--admin-accent)',
+        },
         brand: {
           black: '#121212',
           canvas: '#FAFAFA',

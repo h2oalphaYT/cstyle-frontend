@@ -45,7 +45,7 @@ export const FormulaTester = ({ formula }: { formula?: string }) => {
                     : <Typography.Text type="danger">{result.error}</Typography.Text>)}
             </Space>
             <details>
-                <summary className="cursor-pointer text-xs text-gray-500">Available variables and functions</summary>
+                <summary className="cursor-pointer text-xs text-admin-muted">Available variables and functions</summary>
                 <div className="max-h-56 overflow-auto text-xs mt-2 space-y-1">
                     <div>{fns.map(f => <Tag key={f}>{f}</Tag>)}</div>
                     <div>Operators: + − × ÷ ( ) &lt; &gt; &lt;= &gt;= == != &amp;&amp; || condition ? a : b</div>

@@ -131,7 +131,7 @@ const EmployeeForm = ({ employee, onSaved, onClose }: { employee: Employee | nul
                                 <Col xs={12} md={8}><Form.Item name={['bank', 'branchCode']} label="Branch code"><Input /></Form.Item></Col>
                                 <Col xs={12} md={8}><Form.Item name={['bank', 'accountNumber']} label="Account number" extra={employee?.bank?.masked ? `Current: ${employee.bank.accountNumber}` : undefined}><Input /></Form.Item></Col>
                                 <Col xs={24} md={8}><Form.Item name={['bank', 'accountName']} label="Account name"><Input /></Form.Item></Col>
-                            </>) : <Col span={24}><p className="text-gray-500">Your role cannot edit bank details.</p></Col>}
+                            </>) : <Col span={24}><p className="text-admin-muted">Your role cannot edit bank details.</p></Col>}
                             <Col xs={12} md={8}><Form.Item name={['statutory', 'epfNumber']} label="EPF number"><Input /></Form.Item></Col>
                             <Col xs={12} md={8}><Form.Item name={['statutory', 'etfNumber']} label="ETF number"><Input /></Form.Item></Col>
                             <Col xs={12} md={4}><Form.Item name={['statutory', 'epfApplicable']} label="EPF applies" valuePropName="checked"><Switch /></Form.Item></Col>
@@ -244,7 +244,7 @@ const EmployeeDetail = ({ id, onEdit }: { id: string; onEdit: (e: Employee) => v
                     key: 'login', label: 'Login access', children: (
                         <Form form={loginForm} layout="vertical" className="max-w-md" initialValues={{ email: emp.email }}
                             onFinish={async (v) => { if (await act(() => http.post(`/employees/${emp.id}/user`, v), 'Login linked')) load(); }}>
-                            <p className="text-gray-500">Gives this employee a login for self-service (own payslips and leave) or a back-office role.</p>
+                            <p className="text-admin-muted">Gives this employee a login for self-service (own payslips and leave) or a back-office role.</p>
                             <Form.Item name="email" label="Login email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
                             <Form.Item name="password" label="Password (for a new login)" rules={[{ min: 8 }]}><Input.Password autoComplete="new-password" /></Form.Item>
                             <Form.Item name="staffRole" label="Role (default: Employee)"><RemoteSelect path="/payroll/roles" /></Form.Item>

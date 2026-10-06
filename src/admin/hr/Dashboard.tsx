@@ -24,7 +24,8 @@ interface DashboardData {
     };
 }
 
-const COLORS = ['#c9a227', '#1f2937', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6', '#f97316', '#14b8a6'];
+// Series colours chosen to stay visible on both the light and dark card backgrounds.
+const COLORS = ['#c9a227', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#f97316', '#14b8a6', '#ec4899'];
 const axis = { fontSize: 11 };
 
 const Stat = ({ title, value, icon, money, to }: { title: string; value: number; icon?: React.ReactNode; money?: boolean; to?: string }) => {
@@ -142,7 +143,7 @@ export function HrDashboard() {
                             <ResponsiveContainer width="100%" height={240}>
                                 <BarChart data={p.distribution}>
                                     <XAxis dataKey="range" tick={axis} /><YAxis tick={axis} allowDecimals={false} /><Tooltip />
-                                    <Bar dataKey="employees" fill="#1f2937" name="Employees" />
+                                    <Bar dataKey="employees" fill="#3b82f6" name="Employees" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </Card>

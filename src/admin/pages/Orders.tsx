@@ -25,7 +25,6 @@ const OrdersPage = () => {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<Order | null>(null);
     const [updating, setUpdating] = useState(false);
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -83,14 +82,14 @@ const OrdersPage = () => {
         { title: 'Order', dataIndex: 'orderNumber', width: 120, render: (n: string) => <span className="font-semibold">{n}</span> },
         {
             title: 'Customer',
-            render: (_, o) => <div><div className="font-medium">{o.customer.name}</div><div className="text-xs text-gray-500">{o.customer.email}{o.user ? '' : ' · guest'}</div></div>,
+            render: (_, o) => <div><div className="font-medium">{o.customer.name}</div><div className="text-xs text-admin-muted">{o.customer.email}{o.user ? '' : ' · guest'}</div></div>,
         },
         { title: 'Date', dataIndex: 'createdAt', width: 120, render: (d: string) => new Date(d).toLocaleDateString() },
         { title: 'Items', width: 70, render: (_, o) => o.items.reduce((s, i) => s + i.quantity, 0) },
         { title: 'Total', dataIndex: 'total', width: 120, render: (t: number) => <span className="font-semibold">{money(t)}</span> },
         {
             title: 'Payment', width: 140,
-            render: (_, o) => <Space direction="vertical" size={0}><Tag color={PAYMENT_COLOR[o.paymentStatus]}>{o.paymentStatus.toUpperCase()}</Tag><span className="text-xs text-gray-500">{o.paymentMethod === 'cod' ? 'Cash on delivery' : 'Bank transfer'}</span></Space>,
+            render: (_, o) => <Space direction="vertical" size={0}><Tag color={PAYMENT_COLOR[o.paymentStatus]}>{o.paymentStatus.toUpperCase()}</Tag><span className="text-xs text-admin-muted">{o.paymentMethod === 'cod' ? 'Cash on delivery' : 'Bank transfer'}</span></Space>,
         },
         {
             title: 'Status', width: 170,
@@ -112,13 +111,13 @@ const OrdersPage = () => {
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Orders</h1>
-                    <p className="text-gray-500 m-0">{total} order{total === 1 ? '' : 's'}</p>
+                    <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Orders</h1>
+                    <p className="text-admin-muted m-0">{total} order{total === 1 ? '' : 's'}</p>
                 </div>
                 <Button icon={<ReloadOutlined />} onClick={load}>Refresh</Button>
             </div>
 
-            <Card className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`}>
+            <Card className="rounded-xl">
                 <div className="flex flex-wrap gap-3 mb-4">
                     <Input.Search allowClear placeholder="Order number, name, email, phone" value={search}
                         onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full md:w-80" />
@@ -170,7 +169,7 @@ const OrdersPage = () => {
                             dataSource={selected.items}
                             columns={[
                                 { title: '', dataIndex: 'image', width: 56, render: (src: string) => <SafeImage src={src} alt="" wrapperClassName="w-10 h-12" className="w-full h-full object-cover" /> },
-                                { title: 'Item', render: (_, i) => <div><div>{i.name}</div><div className="text-xs text-gray-500">{[i.sku, i.size, i.color].filter(Boolean).join(' · ')}</div></div> },
+                                { title: 'Item', render: (_, i) => <div><div>{i.name}</div><div className="text-xs text-admin-muted">{[i.sku, i.size, i.color].filter(Boolean).join(' · ')}</div></div> },
                                 { title: 'Qty', dataIndex: 'quantity', width: 50 },
                                 { title: 'Price', dataIndex: 'unitPrice', width: 100, render: money },
                                 { title: 'Total', dataIndex: 'lineTotal', width: 110, render: money },

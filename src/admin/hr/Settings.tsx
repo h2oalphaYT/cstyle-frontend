@@ -143,7 +143,7 @@ const RolesTab = () => {
     return (
         <Card className={cardClass()} extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => open('new')}>New role</Button>} title="Roles & permissions">
             <Table rowKey="id" loading={roles.loading} dataSource={roles.data} pagination={false} columns={[
-                { title: 'Role', render: (_, r) => <div><b>{r.name}</b> {r.system && <Tag>built-in</Tag>}<div className="text-xs text-gray-500">{r.description}</div></div> },
+                { title: 'Role', render: (_, r) => <div><b>{r.name}</b> {r.system && <Tag>built-in</Tag>}<div className="text-xs text-admin-muted">{r.description}</div></div> },
                 { title: 'Sees', dataIndex: 'dataScope', render: (s: string) => ({ all: 'All employees', department: 'Own department', team: 'Own team', own: 'Only themselves' } as Record<string, string>)[s] || s, width: 140 },
                 { title: 'Permissions', render: (_, r) => r.permissions.length, width: 110 },
                 { title: 'Status', render: (_, r) => <StatusTag status={r.active ? 'active' : 'inactive'} />, width: 100 },
@@ -198,7 +198,7 @@ const StaffUsersTab = () => {
         <Card className={cardClass()} title="Back-office users" extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setOpen(true); }}>Give access</Button>}>
             <Alert type="info" showIcon className="mb-3" message="Staff users only see the Payroll & HR section, limited by their role. Store administration stays with administrators." />
             <Table rowKey="id" loading={loading} dataSource={data} pagination={false} columns={[
-                { title: 'User', render: (_, u) => <div>{u.name}<div className="text-xs text-gray-500">{u.email}</div></div> },
+                { title: 'User', render: (_, u) => <div>{u.name}<div className="text-xs text-admin-muted">{u.email}</div></div> },
                 {
                     title: 'Role', render: (_, u) => u.role === 'admin' ? <Tag color="gold">Administrator</Tag>
                         : <RemoteSelect path="/payroll/roles" size="small" className="w-48" value={u.staffRole?._id} onChange={(v) => patch(u, { staffRole: v }, 'Role changed')} />,
