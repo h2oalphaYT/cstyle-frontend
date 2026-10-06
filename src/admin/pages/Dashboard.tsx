@@ -23,7 +23,6 @@ const AdminDashboard = () => {
     const [sales, setSales] = useState<{ date: string; revenue: number; orders: number }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -41,8 +40,7 @@ const AdminDashboard = () => {
 
     useEffect(() => { load(); }, [load]);
 
-    const cardClass = `${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl h-full`;
-    const titleClass = isDarkMode ? 'text-white' : 'text-brand-black';
+    const cardClass = 'rounded-xl h-full';
 
     if (error) return <Alert type="error" showIcon message="Could not load the dashboard" description={error} action={<Button onClick={load}>Retry</Button>} />;
     if (loading && !data) return <div className="flex justify-center py-24"><Spin size="large" /></div>;
@@ -72,10 +70,10 @@ const AdminDashboard = () => {
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className={`text-3xl font-bold font-poppins m-0 ${titleClass}`}>
+                    <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold font-poppins m-0 text-admin-text">
                         Dashboard
                     </motion.h1>
-                    <p className="text-gray-500 m-0">Live figures from MongoDB · cancelled orders are excluded from revenue</p>
+                    <p className="text-admin-muted m-0">Live figures from MongoDB · cancelled orders are excluded from revenue</p>
                 </div>
                 <div className="flex gap-3">
                     <Select value={range} onChange={setRange} className="w-40" options={[
@@ -94,9 +92,9 @@ const AdminDashboard = () => {
                                 <Card className={`${cardClass} hover:shadow-lg transition-shadow`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-gray-500 text-sm m-0">{s.title}</p>
-                                            <p className={`text-2xl font-bold m-0 mt-1 ${titleClass}`}>{s.value}</p>
-                                            <p className="text-xs text-gray-500 m-0 mt-1">{s.sub}</p>
+                                            <p className="text-admin-muted text-sm m-0">{s.title}</p>
+                                            <p className="text-2xl font-bold m-0 mt-1 text-admin-text">{s.value}</p>
+                                            <p className="text-xs text-admin-muted m-0 mt-1">{s.sub}</p>
                                         </div>
                                         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-white text-xl`}>{s.icon}</div>
                                     </div>
@@ -114,14 +112,14 @@ const AdminDashboard = () => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={16}>
-                    <Card title={<span className={titleClass}>Revenue & Orders</span>} className={cardClass}>
+                    <Card title="Revenue & Orders" className={cardClass}>
                         {sales.every(s => !s.orders) ? <Empty description="No orders in this period" /> : (
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart data={sales}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#374151' : '#E5E7EB'} />
-                                    <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                                    <YAxis yAxisId="rev" stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
-                                    <YAxis yAxisId="ord" orientation="right" stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="label" fontSize={12} />
+                                    <YAxis yAxisId="rev" fontSize={12} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+                                    <YAxis yAxisId="ord" orientation="right" fontSize={12} allowDecimals={false} />
                                     <Tooltip formatter={(v: number, n: string) => (n === 'Revenue' ? money(v) : v)} />
                                     <Legend />
                                     <Line yAxisId="rev" type="monotone" dataKey="revenue" name="Revenue" stroke="#D4AF37" strokeWidth={2} dot={false} />
@@ -132,7 +130,7 @@ const AdminDashboard = () => {
                     </Card>
                 </Col>
                 <Col xs={24} lg={8}>
-                    <Card title={<span className={titleClass}>Orders by Status</span>} className={cardClass}>
+                    <Card title="Orders by Status" className={cardClass}>
                         {statusData.length === 0 ? <Empty /> : (
                             <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
@@ -150,17 +148,17 @@ const AdminDashboard = () => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={14}>
-                    <Card title={<span className={titleClass}>Recent Orders</span>} extra={<Link to="/admin/orders">View all</Link>} className={cardClass}>
+                    <Card title="Recent Orders" extra={<Link to="/admin/orders">View all</Link>} className={cardClass}>
                         <Table rowKey="id" size="small" columns={orderColumns} dataSource={data.recentOrders} pagination={false} scroll={{ x: 500 }} />
                     </Card>
                 </Col>
                 <Col xs={24} lg={10}>
-                    <Card title={<span className={titleClass}>Top Products</span>} className={cardClass}>
+                    <Card title="Top Products" className={cardClass}>
                         {data.topProducts.length === 0 ? <Empty description="No sales yet" /> : (
                             <ResponsiveContainer width="100%" height={260}>
                                 <BarChart data={data.topProducts} layout="vertical" margin={{ left: 20 }}>
-                                    <XAxis type="number" allowDecimals={false} stroke="#9CA3AF" fontSize={12} />
-                                    <YAxis type="category" dataKey="name" width={130} stroke="#9CA3AF" fontSize={11} />
+                                    <XAxis type="number" allowDecimals={false} fontSize={12} />
+                                    <YAxis type="category" dataKey="name" width={130} fontSize={11} />
                                     <Tooltip formatter={(v: number, n: string) => (n === 'revenue' ? money(v) : v)} />
                                     <Bar dataKey="quantity" name="Units sold" fill="#D4AF37" radius={[0, 6, 6, 0]} />
                                 </BarChart>
@@ -170,15 +168,15 @@ const AdminDashboard = () => {
                 </Col>
             </Row>
 
-            <Card title={<span className={titleClass}>Low Stock Products</span>} extra={<Link to="/admin/inventory">Manage stock</Link>} className={cardClass}>
+            <Card title="Low Stock Products" extra={<Link to="/admin/inventory">Manage stock</Link>} className={cardClass}>
                 {data.lowStockProducts.length === 0 ? <Empty description="Everything is well stocked" /> : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {data.lowStockProducts.map(p => (
                             <div key={p.id} className="flex items-center gap-3">
                                 <SafeImage src={p.thumbnail} alt="" wrapperClassName="w-10 h-12 rounded" className="w-full h-full object-cover" />
                                 <div className="flex-1 min-w-0">
-                                    <p className={`m-0 truncate ${titleClass}`}>{p.name}</p>
-                                    <p className="m-0 text-xs text-gray-500">{p.sku}</p>
+                                    <p className="m-0 truncate text-admin-text">{p.name}</p>
+                                    <p className="m-0 text-xs text-admin-muted">{p.sku}</p>
                                 </div>
                                 <Tag color={p.stock === 0 ? 'red' : 'orange'}>{p.stock} left</Tag>
                             </div>

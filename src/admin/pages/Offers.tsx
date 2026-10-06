@@ -52,7 +52,7 @@ const CouponsTab = () => {
     };
 
     const columns: ColumnsType<Coupon> = [
-        { title: 'Code', dataIndex: 'code', render: (c: string, r) => <div><div className="font-semibold tracking-wider">{c}</div><div className="text-xs text-gray-500">{r.description}</div></div> },
+        { title: 'Code', dataIndex: 'code', render: (c: string, r) => <div><div className="font-semibold tracking-wider">{c}</div><div className="text-xs text-admin-muted">{r.description}</div></div> },
         { title: 'Discount', render: (_, c) => (c.type === 'percentage' ? `${c.value}%${c.maxDiscount ? ` (max Rs ${c.maxDiscount.toLocaleString()})` : ''}` : `Rs ${c.value.toLocaleString()}`) },
         { title: 'Min. order', dataIndex: 'minimumAmount', render: (m: number) => (m ? `Rs ${m.toLocaleString()}` : '—') },
         { title: 'Used', render: (_, c) => `${c.usedCount}${c.usageLimit != null ? ` / ${c.usageLimit}` : ''}` },
@@ -74,7 +74,7 @@ const CouponsTab = () => {
     return (
         <>
             <div className="flex justify-end mb-4">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor(null)} className="bg-brand-gold border-0 text-brand-black font-semibold">Add Coupon</Button>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor(null)} className="font-semibold">Add Coupon</Button>
             </div>
             <Table rowKey="id" columns={columns} dataSource={items} loading={loading} pagination={false} scroll={{ x: 800 }} />
             <Modal title={editing ? `Edit ${editing.code}` : 'Add Coupon'} open={open} onCancel={() => setOpen(false)} onOk={save} confirmLoading={saving} okText="Save" destroyOnClose>
@@ -153,7 +153,7 @@ const BannersTab = () => {
 
     const columns: ColumnsType<Banner> = [
         { title: 'Image', dataIndex: 'image', width: 180, render: (src: string) => <SafeImage src={src} alt="" wrapperClassName="w-40 h-16 rounded" className="w-full h-full object-cover" /> },
-        { title: 'Title', dataIndex: 'title', render: (t: string, b) => <div><div className="font-medium">{t}</div><div className="text-xs text-gray-500">{b.subtitle}</div></div> },
+        { title: 'Title', dataIndex: 'title', render: (t: string, b) => <div><div className="font-medium">{t}</div><div className="text-xs text-admin-muted">{b.subtitle}</div></div> },
         { title: 'Placement', dataIndex: 'placement', render: (p: string) => <Tag>{p === 'hero' ? 'Home hero' : 'Promo'}</Tag> },
         { title: 'Link', dataIndex: 'link' },
         { title: 'Status', dataIndex: 'active', render: (a: boolean) => <Tag color={a ? 'success' : 'default'}>{a ? 'Active' : 'Hidden'}</Tag> },
@@ -173,8 +173,8 @@ const BannersTab = () => {
     return (
         <>
             <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-                <p className="text-gray-500 m-0">Active hero banners replace the home page slideshow.</p>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor(null)} className="bg-brand-gold border-0 text-brand-black font-semibold">Add Banner</Button>
+                <p className="text-admin-muted m-0">Active hero banners replace the home page slideshow.</p>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor(null)} className="font-semibold">Add Banner</Button>
             </div>
             <Table rowKey="id" columns={columns} dataSource={items} loading={loading} pagination={false} scroll={{ x: 800 }} />
             <Modal title={editing ? 'Edit Banner' : 'Add Banner'} open={open} onCancel={() => setOpen(false)} onOk={save} okButtonProps={{ disabled: uploading }} okText="Save" destroyOnClose width={640}>
@@ -200,11 +200,10 @@ const BannersTab = () => {
 };
 
 const OffersPage = () => {
-    const isDarkMode = document.documentElement.classList.contains('dark');
     return (
         <div className="space-y-6">
-            <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Coupons & Banners</h1>
-            <Card className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`}>
+            <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Coupons & Banners</h1>
+            <Card className="rounded-xl">
                 <Tabs items={[
                     { key: 'coupons', label: 'Coupons', children: <CouponsTab /> },
                     { key: 'banners', label: 'Banners', children: <BannersTab /> },

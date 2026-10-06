@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ordersApi } from '../../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { App as AntApp, ConfigProvider, Layout, Badge, Dropdown, Avatar, Input, Switch, theme as antTheme } from 'antd';
+import { App as AntApp, ConfigProvider, Layout, Badge, Dropdown, Avatar, Input, Menu, Switch, Tooltip } from 'antd';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -24,30 +24,57 @@ import {
     ShopOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { DownOutlined, RightOutlined, SolutionOutlined } from '@ant-design/icons';
 import { HR_NAV } from '../hr/nav';
+import { AdminThemeProvider, useAdminTheme } from '../theme';
 
 const { Header, Sider, Content } = Layout;
 
-interface MenuItem {
-    key: string;
-    icon: React.ReactNode;
-    label: string;
-    path: string;
-}
+type NavItem = Required<MenuProps>['items'][number];
 
-const AdminLayout = () => {
+interface StoreLink { path: string; label: string; icon: React.ReactNode }
+
+/** Store administration menu, admins only. Grouped by what people come to do. */
+const STORE_GROUPS: { key: string; title: string; items: StoreLink[] }[] = [
+    {
+        key: 'store', title: 'Store', items: [
+            { path: '/admin', label: 'Dashboard', icon: <DashboardOutlined /> },
+            { path: '/admin/orders', label: 'Orders', icon: <ShoppingCartOutlined /> },
+            { path: '/admin/customers', label: 'Customers', icon: <UserOutlined /> },
+            { path: '/admin/analytics', label: 'Analytics', icon: <BarChartOutlined /> },
+        ],
+    },
+    {
+        key: 'catalog', title: 'Catalog', items: [
+            { path: '/admin/products', label: 'Products', icon: <ShoppingOutlined /> },
+            { path: '/admin/categories', label: 'Categories', icon: <AppstoreOutlined /> },
+            { path: '/admin/inventory', label: 'Stock / Inventory', icon: <InboxOutlined /> },
+            { path: '/admin/offers', label: 'Coupons & Banners', icon: <TagOutlined /> },
+        ],
+    },
+];
+const SYSTEM_LINKS: StoreLink[] = [{ path: '/admin/settings', label: 'Store Settings', icon: <SettingOutlined /> }];
+
+const hrPath = (p: string) => `/admin/hr${p ? `/${p}` : ''}`;
+
+/** The menu entry for a URL: an exact match, else the longest entry the URL sits under (e.g. a payroll run). */
+const activeEntry = (pathname: string, paths: string[]) => {
+    let best: string | undefined;
+    for (const p of paths) {
+        const hit = pathname === p || (p !== '/admin' && p !== '/admin/hr' && pathname.startsWith(`${p}/`));
+        if (hit && (!best || p.length > best.length)) best = p;
+    }
+    return best;
+};
+
+const AdminShell = () => {
     const [collapsed, setCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024);
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        return localStorage.getItem('admin-theme') === 'dark';
-    });
+    const { isDark, setDark, antd } = useAdminTheme();
     const [pendingOrders, setPendingOrders] = useState(0);
     const [search, setSearch] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout, isAdmin, can } = useAuth();
-    const inHr = location.pathname.startsWith('/admin/hr');
-    const [hrOpen, setHrOpen] = useState(true);
+
     // Payroll & HR menu, limited to what the user's role allows.
     const hrNav = useMemo(() => HR_NAV
         .map(s => ({ ...s, items: s.items.filter(i => !i.perms.length || can(...i.perms)) }))
@@ -61,6 +88,45 @@ const AdminLayout = () => {
             .catch(() => setPendingOrders(0));
     }, [location.pathname, isAdmin]);
 
+    const allPaths = useMemo(() => [
+        ...(isAdmin ? [...STORE_GROUPS.flatMap(g => g.items), ...SYSTEM_LINKS].map(i => i.path) : []),
+        ...hrNav.flatMap(s => s.items.map(i => hrPath(i.path))),
+    ], [isAdmin, hrNav]);
+    const selected = activeEntry(location.pathname, allPaths);
+    const selectedSection = hrNav.find(s => s.items.some(i => hrPath(i.path) === selected))?.title;
+
+    // Open the group holding the current page; the user can open or close the others freely.
+    const [openKeys, setOpenKeys] = useState<string[]>(() => (selectedSection ? [`hr:${selectedSection}`] : []));
+    useEffect(() => {
+        if (selectedSection) setOpenKeys(keys => (keys.includes(`hr:${selectedSection}`) ? keys : [...keys, `hr:${selectedSection}`]));
+    }, [selectedSection]);
+
+    const menuItems = useMemo<NavItem[]>(() => {
+        const link = (i: StoreLink): NavItem => ({
+            key: i.path,
+            icon: i.icon,
+            label: i.path === '/admin/orders' && pendingOrders > 0
+                ? <Link to={i.path} className="flex items-center justify-between gap-2">{i.label}<Badge count={pendingOrders} size="small" /></Link>
+                : <Link to={i.path}>{i.label}</Link>,
+        });
+        // Collapsed, group titles have no room, so groups are separated by a thin divider instead.
+        const group = (key: string, title: string, children: NavItem[]): NavItem[] => (collapsed
+            ? [{ type: 'divider', key: `${key}:div` }, ...children]
+            : [{ type: 'group', key, label: title, children }]);
+
+        const items: NavItem[] = [];
+        if (isAdmin) STORE_GROUPS.forEach(g => items.push(...group(g.key, g.title, g.items.map(link))));
+        if (hrNav.length) {
+            const hrChildren: NavItem[] = hrNav.flatMap((s): NavItem[] => {
+                const links = s.items.map(i => link({ path: hrPath(i.path), label: i.label, icon: i.icon }));
+                return s.title === 'Overview' ? links : [{ key: `hr:${s.title}`, icon: s.icon, label: s.title, children: links }];
+            });
+            items.push(...group('hr', 'Payroll & HR', hrChildren));
+        }
+        if (isAdmin) items.push(...group('system', 'System', SYSTEM_LINKS.map(link)));
+        return collapsed ? items.slice(1) : items;
+    }, [isAdmin, hrNav, collapsed, pendingOrders]);
+
     const onProfileMenu: MenuProps['onClick'] = async ({ key }) => {
         if (key === 'logout') {
             await logout();
@@ -72,62 +138,15 @@ const AdminLayout = () => {
         }
     };
 
-    useEffect(() => {
-        localStorage.setItem('admin-theme', isDarkMode ? 'dark' : 'light');
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-        // Leaving the admin restores the storefront's own theme.
-        return () => {
-            const storeTheme = localStorage.getItem('cstyle-theme') || 'dark';
-            document.documentElement.classList.toggle('dark', storeTheme === 'dark');
-        };
-    }, [isDarkMode]);
-
-    const storeItems: MenuItem[] = [
-        { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard', path: '/admin' },
-        { key: 'products', icon: <ShoppingOutlined />, label: 'Products', path: '/admin/products' },
-        { key: 'categories', icon: <AppstoreOutlined />, label: 'Categories', path: '/admin/categories' },
-        { key: 'offers', icon: <TagOutlined />, label: 'Coupons & Banners', path: '/admin/offers' },
-        { key: 'orders', icon: <ShoppingCartOutlined />, label: 'Orders', path: '/admin/orders' },
-        { key: 'inventory', icon: <InboxOutlined />, label: 'Stock / Inventory', path: '/admin/inventory' },
-        { key: 'customers', icon: <UserOutlined />, label: 'Customers', path: '/admin/customers' },
-        { key: 'analytics', icon: <BarChartOutlined />, label: 'Analytics', path: '/admin/analytics' },
-        { key: 'settings', icon: <SettingOutlined />, label: 'Settings', path: '/admin/settings' },
-    ];
-    const menuItems = isAdmin ? storeItems : [];
-
     const profileMenuItems: MenuProps['items'] = [
-        {
-            key: 'store',
-            icon: <ShopOutlined />,
-            label: 'View Store',
-        },
-        {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: 'Settings',
-        },
-        {
-            type: 'divider',
-        },
-        {
-            key: 'logout',
-            icon: <LogoutOutlined />,
-            label: 'Logout',
-            danger: true,
-        },
+        { key: 'store', icon: <ShopOutlined />, label: 'View Store' },
+        { key: 'settings', icon: <SettingOutlined />, label: 'Settings' },
+        { type: 'divider' },
+        { key: 'logout', icon: <LogoutOutlined />, label: 'Logout', danger: true },
     ];
 
     return (
-        <ConfigProvider
-            theme={{
-                algorithm: isDarkMode ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
-                token: { colorPrimary: '#D4AF37', fontFamily: 'Inter, sans-serif' },
-            }}
-        >
+        <ConfigProvider theme={antd}>
         <AntApp>
         <Layout className="min-h-screen">
             {/* Sidebar */}
@@ -135,151 +154,97 @@ const AdminLayout = () => {
                 trigger={null}
                 collapsible
                 collapsed={collapsed}
-                className={`${isDarkMode ? 'bg-brand-black' : 'bg-white'
-                    } border-r ${isDarkMode ? 'border-gray-800' : 'border-gray-200'} !fixed !h-screen z-50 overflow-auto`}
+                collapsedWidth={72}
                 width={260}
+                className="!fixed !h-screen z-50 border-r border-admin-border"
             >
-                {/* Logo */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className={`h-16 flex items-center ${collapsed ? 'justify-center' : 'justify-start px-6'} border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'
-                        }`}
-                >
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-brand-gold to-brand-gold-dark flex items-center justify-center rounded">
-                            <span className="text-brand-black font-bold text-lg font-poppins">C</span>
-                        </div>
-                        {!collapsed && (
-                            <div>
-                                <span className={`text-xl font-bold font-poppins ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>
-                                    Cstyle
-                                </span>
-                                <p className="text-xs text-brand-gold uppercase tracking-wider">Admin</p>
+                <div className="h-full flex flex-col">
+                    {/* Logo */}
+                    <Link
+                        to={isAdmin ? '/admin' : '/admin/hr'}
+                        className={`h-16 shrink-0 flex items-center ${collapsed ? 'justify-center' : 'px-5'} border-b border-admin-border`}
+                    >
+                        <div className="flex items-center space-x-3">
+                            <div className="w-9 h-9 bg-gradient-to-br from-brand-gold to-brand-gold-dark flex items-center justify-center rounded-lg">
+                                <span className="text-brand-black font-bold text-lg font-poppins">C</span>
                             </div>
-                        )}
-                    </div>
-                </motion.div>
-
-                {/* Menu Items */}
-                <nav className="mt-4">
-                    {menuItems.map((item, index) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <motion.div
-                                key={item.key}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                            >
-                                <Link to={item.path}>
-                                    <div
-                                        className={`flex items-center ${collapsed ? 'justify-center' : 'justify-start px-6'
-                                            } py-4 mx-2 my-1 rounded-lg transition-all cursor-pointer group ${isActive
-                                                ? 'bg-brand-gold text-brand-black'
-                                                : `${isDarkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-brand-black'}`
-                                            }`}
-                                    >
-                                        <span className={`text-xl ${isActive ? 'scale-110' : 'group-hover:scale-110'} transition-transform`}>
-                                            {item.icon}
-                                        </span>
-                                        {!collapsed && <span className="ml-4 font-medium">{item.label}</span>}
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        );
-                    })}
-
-                    {hrNav.length > 0 && (
-                        <div className="mt-2 pb-6">
-                            {isAdmin && (
-                                <button type="button" onClick={() => setHrOpen(!hrOpen)}
-                                    className={`w-[calc(100%-1rem)] flex items-center ${collapsed ? 'justify-center' : 'justify-between px-6'} py-3 mx-2 rounded-lg ${inHr ? 'text-brand-gold' : isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>
-                                    <span className="flex items-center"><SolutionOutlined className="text-xl" />{!collapsed && <span className="ml-4 font-semibold">Payroll &amp; HR</span>}</span>
-                                    {!collapsed && (hrOpen ? <DownOutlined className="text-xs" /> : <RightOutlined className="text-xs" />)}
-                                </button>
-                            )}
-                            {(hrOpen || !isAdmin) && hrNav.map(section => (
-                                <div key={section.title} className="mt-1">
-                                    {!collapsed && <p className="px-8 pt-3 pb-1 text-[10px] uppercase tracking-wider text-gray-500 m-0">{section.title}</p>}
-                                    {section.items.map(item => {
-                                        const to = `/admin/hr${item.path ? `/${item.path}` : ''}`;
-                                        const isActive = location.pathname === to || (item.path === 'payroll' && location.pathname.startsWith('/admin/hr/payroll/'));
-                                        return (
-                                            <Link to={to} key={to} title={collapsed ? item.label : undefined}>
-                                                <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-start pl-8 pr-4'} py-2 mx-2 rounded-lg text-sm transition-all ${isActive
-                                                    ? 'bg-brand-gold text-brand-black'
-                                                    : isDarkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-brand-black'}`}>
-                                                    <span className="text-base">{item.icon}</span>
-                                                    {!collapsed && <span className="ml-3">{item.label}</span>}
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
+                            {!collapsed && (
+                                <div className="leading-tight">
+                                    <span className="text-lg font-bold font-poppins text-admin-text">Cstyle</span>
+                                    <p className="text-[10px] text-admin-accent uppercase tracking-[0.2em] m-0">Admin</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
-                    )}
-                </nav>
+                    </Link>
+
+                    {/* Menu */}
+                    <nav className="admin-nav flex-1 overflow-y-auto overflow-x-hidden py-2" aria-label="Admin navigation">
+                        <Menu
+                            mode="inline"
+                            inlineCollapsed={collapsed}
+                            items={menuItems}
+                            selectedKeys={selected ? [selected] : []}
+                            openKeys={collapsed ? undefined : openKeys}
+                            onOpenChange={keys => setOpenKeys(keys as string[])}
+                            className="!border-e-0"
+                        />
+                    </nav>
+                </div>
             </Sider>
 
             {/* Main Layout */}
-            <Layout className={`${collapsed ? 'ml-20' : 'ml-[260px]'} transition-all duration-300`}>
+            <Layout className={`${collapsed ? 'ml-[72px]' : 'ml-[260px]'} transition-all duration-300`}>
                 {/* Header */}
-                <Header
-                    className={`${isDarkMode ? 'bg-brand-black border-gray-800' : 'bg-white border-gray-200'
-                        } border-b !px-6 flex items-center justify-between sticky top-0 z-40`}
-                >
+                <Header className="border-b border-admin-border flex items-center justify-between sticky top-0 z-40">
                     <div className="flex items-center space-x-4">
                         <button
+                            type="button"
                             onClick={() => setCollapsed(!collapsed)}
-                            className={`text-xl ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-brand-black'} transition-colors`}
+                            aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+                            className="text-xl text-admin-muted hover:text-admin-text transition-colors"
                         >
                             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                         </button>
 
                         {/* Search Bar */}
                         {isAdmin && <Input
-                            prefix={<SearchOutlined className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />}
+                            prefix={<SearchOutlined className="text-admin-muted" />}
                             placeholder="Search products by name or SKU…"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onPressEnter={() => {
                                 if (search.trim()) navigate(`/admin/products?search=${encodeURIComponent(search.trim())}`);
                             }}
-                            className={`hidden md:flex w-80 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300'
-                                }`}
+                            className="hidden md:flex w-80"
                         />}
                     </div>
 
                     <div className="flex items-center space-x-6">
                         {/* Theme Toggle */}
-                        <div className="flex items-center space-x-2">
-                            <SunOutlined className={isDarkMode ? 'text-gray-500' : 'text-brand-gold'} />
-                            <Switch
-                                checked={isDarkMode}
-                                onChange={setIsDarkMode}
-                                className="bg-gray-300"
-                            />
-                            <MoonOutlined className={isDarkMode ? 'text-brand-gold' : 'text-gray-500'} />
-                        </div>
+                        <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+                            <div className="flex items-center space-x-2">
+                                <SunOutlined className={isDark ? 'text-admin-muted' : 'text-admin-accent'} />
+                                <Switch checked={isDark} onChange={setDark} size="small" aria-label="Dark mode" />
+                                <MoonOutlined className={isDark ? 'text-admin-accent' : 'text-admin-muted'} />
+                            </div>
+                        </Tooltip>
 
                         {/* Notifications */}
-                        {isAdmin && <Link to="/admin/orders?status=pending" aria-label={`${pendingOrders} pending orders`}>
+                        {isAdmin && <Link to="/admin/orders?status=pending" aria-label={`${pendingOrders} pending orders`} className="flex items-center">
                             <Badge count={pendingOrders} offset={[-5, 5]}>
-                                <BellOutlined className={`text-xl ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-brand-black'} cursor-pointer transition-colors`} />
+                                <BellOutlined className="text-xl text-admin-muted hover:text-admin-text cursor-pointer transition-colors" />
                             </Badge>
                         </Link>}
 
                         {/* Profile Dropdown */}
                         <Dropdown menu={{ items: profileMenuItems, onClick: onProfileMenu }} placement="bottomRight" arrow>
                             <div className="flex items-center space-x-3 cursor-pointer">
-                                <Avatar size={40} className="bg-brand-gold text-brand-black font-bold">
+                                <Avatar size={36} className="bg-brand-gold text-brand-black font-bold">
                                     {(user?.name || 'A').charAt(0).toUpperCase()}
                                 </Avatar>
                                 <div className="hidden md:block leading-tight">
-                                    <p className={`text-sm font-medium m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>{user?.name}</p>
-                                    <p className="text-xs text-gray-500 m-0">{user?.email}</p>
+                                    <p className="text-sm font-medium m-0 text-admin-text">{user?.name}</p>
+                                    <p className="text-xs text-admin-muted m-0">{user?.email}</p>
                                 </div>
                             </div>
                         </Dropdown>
@@ -287,7 +252,7 @@ const AdminLayout = () => {
                 </Header>
 
                 {/* Content */}
-                <Content className={`${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} p-6 min-h-[calc(100vh-64px)]`}>
+                <Content className="admin-content p-6 min-h-[calc(100vh-64px)] text-admin-text">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={location.pathname}
@@ -306,5 +271,11 @@ const AdminLayout = () => {
         </ConfigProvider>
     );
 };
+
+const AdminLayout = () => (
+    <AdminThemeProvider>
+        <AdminShell />
+    </AdminThemeProvider>
+);
 
 export default AdminLayout;

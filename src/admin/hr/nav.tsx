@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 import {
-    AccountBookOutlined, ApartmentOutlined, AuditOutlined, BankOutlined, CalculatorOutlined, CalendarOutlined, ClusterOutlined, DashboardOutlined, DollarOutlined,
-    FileExcelOutlined, FileTextOutlined, FieldTimeOutlined, GiftOutlined, IdcardOutlined, MinusCircleOutlined, PartitionOutlined, PieChartOutlined, PlusCircleOutlined,
-    ProfileOutlined, ScheduleOutlined, SettingOutlined, SolutionOutlined, SwapOutlined, TeamOutlined, ToolOutlined, UserOutlined, WalletOutlined, WifiOutlined,
+    AccountBookOutlined, ApartmentOutlined, AuditOutlined, BankOutlined, BranchesOutlined, CalculatorOutlined, CalendarOutlined, CarryOutOutlined, ClockCircleOutlined,
+    ClusterOutlined, ControlOutlined, DashboardOutlined, DollarOutlined, EnvironmentOutlined, FieldTimeOutlined, FileExcelOutlined, FileTextOutlined, FundOutlined,
+    GiftOutlined, HistoryOutlined, IdcardOutlined, MinusCircleOutlined, PieChartOutlined, PlusCircleOutlined, ProfileOutlined, ScheduleOutlined, SettingOutlined,
+    SwapOutlined, TagsOutlined, TeamOutlined, ToolOutlined, UserOutlined, UserSwitchOutlined, WalletOutlined, WifiOutlined,
 } from '@ant-design/icons';
 
 export interface HrNavItem { path: string; label: string; icon: ReactNode; perms: string[] }
-export interface HrNavSection { title: string; items: HrNavItem[] }
+export interface HrNavSection { title: string; icon: ReactNode; items: HrNavItem[] }
 
 /**
  * Payroll & HR menu. `perms` = any one of these permissions shows the item (an empty list = every back-office user).
@@ -14,60 +15,69 @@ export interface HrNavSection { title: string; items: HrNavItem[] }
  */
 export const HR_NAV: HrNavSection[] = [
     {
-        title: 'Overview', items: [
+        // Shown as plain links at the top of the Payroll & HR menu; every other section is a collapsible group.
+        title: 'Overview', icon: <DashboardOutlined />, items: [
             { path: '', label: 'HR Dashboard', icon: <DashboardOutlined />, perms: ['hr.dashboard.view'] },
             { path: 'me', label: 'My HR', icon: <UserOutlined />, perms: ['leave.request', 'payslip.view.own'] },
         ],
     },
     {
-        title: 'People', items: [
+        title: 'People', icon: <TeamOutlined />, items: [
             { path: 'employees', label: 'Employees', icon: <TeamOutlined />, perms: ['employee.view'] },
             { path: 'groups', label: 'Employee Groups', icon: <ClusterOutlined />, perms: ['org.manage'] },
-            { path: 'org/department', label: 'Departments', icon: <ApartmentOutlined />, perms: ['org.manage'] },
-            { path: 'designations', label: 'Designations', icon: <IdcardOutlined />, perms: ['org.manage'] },
-            { path: 'org/company', label: 'Companies', icon: <BankOutlined />, perms: ['org.manage'] },
-            { path: 'org/branch', label: 'Branches', icon: <PartitionOutlined />, perms: ['org.manage'] },
-            { path: 'org/hub', label: 'Hubs & Locations', icon: <PartitionOutlined />, perms: ['org.manage'] },
-            { path: 'org/costCenter', label: 'Cost Centers', icon: <PartitionOutlined />, perms: ['org.manage'] },
-            { path: 'holidays', label: 'Holidays', icon: <CalendarOutlined />, perms: ['org.manage'] },
-        ],
-    },
-    {
-        title: 'Salary', items: [
-            { path: 'salary-components', label: 'Salary Components', icon: <CalculatorOutlined />, perms: ['salaryConfig.manage'] },
-            { path: 'salary-structures', label: 'Salary Structures', icon: <ProfileOutlined />, perms: ['salaryConfig.manage'] },
             { path: 'employee-salary', label: 'Employee Salary', icon: <DollarOutlined />, perms: ['salary.view', 'salary.edit'] },
         ],
     },
     {
-        title: 'Time & Attendance', items: [
+        title: 'Time & Leave', icon: <ScheduleOutlined />, items: [
             { path: 'attendance', label: 'Attendance', icon: <ScheduleOutlined />, perms: ['attendance.view'] },
-            { path: 'import', label: 'Excel Import / Export', icon: <FileExcelOutlined />, perms: ['attendance.import', 'payroll.export'] },
-            { path: 'biometric', label: 'Biometric Devices', icon: <WifiOutlined />, perms: ['biometric.manage'] },
-            { path: 'biometric/mappings', label: 'Biometric User IDs', icon: <IdcardOutlined />, perms: ['biometric.manage'] },
-            { path: 'biometric/events', label: 'Biometric Events', icon: <WifiOutlined />, perms: ['biometric.manage'] },
-            { path: 'leave', label: 'Leave', icon: <SolutionOutlined />, perms: ['leave.view', 'leave.approve', 'leave.approve.supervisor'] },
-            { path: 'leave-types', label: 'Leave Types', icon: <SolutionOutlined />, perms: ['leave.manage'] },
+            { path: 'leave', label: 'Leave', icon: <CarryOutOutlined />, perms: ['leave.view', 'leave.approve', 'leave.approve.supervisor'] },
             { path: 'overtime', label: 'Overtime', icon: <FieldTimeOutlined />, perms: ['overtime.view', 'overtime.approve'] },
-            { path: 'overtime-types', label: 'Overtime Types', icon: <FieldTimeOutlined />, perms: ['salaryConfig.manage'] },
+            { path: 'import', label: 'Excel Import / Export', icon: <FileExcelOutlined />, perms: ['attendance.import', 'payroll.export'] },
         ],
     },
     {
-        title: 'Pay Items', items: [
-            { path: 'advances', label: 'Salary Advances', icon: <WalletOutlined />, perms: ['advance.manage'] },
-            { path: 'loans', label: 'Loans', icon: <AccountBookOutlined />, perms: ['loan.manage'] },
-            { path: 'allowances', label: 'Allowances', icon: <PlusCircleOutlined />, perms: ['payrollEntry.manage'] },
-            { path: 'bonuses', label: 'Bonuses & Incentives', icon: <GiftOutlined />, perms: ['payrollEntry.manage'] },
-            { path: 'deductions', label: 'Deductions', icon: <MinusCircleOutlined />, perms: ['payrollEntry.manage'] },
-            { path: 'external-payments', label: 'External Payments', icon: <SwapOutlined />, perms: ['externalPayment.manage', 'externalPayment.approve'] },
-        ],
-    },
-    {
-        title: 'Payroll', items: [
+        title: 'Payroll', icon: <CalculatorOutlined />, items: [
             { path: 'payroll', label: 'Payroll Processing', icon: <CalculatorOutlined />, perms: ['payroll.view', 'payroll.process'] },
             { path: 'adjustments', label: 'Adjustments', icon: <ToolOutlined />, perms: ['payroll.adjust', 'payroll.view'] },
             { path: 'payslips', label: 'Payslips', icon: <FileTextOutlined />, perms: ['payslip.view'] },
             { path: 'reports', label: 'Reports', icon: <PieChartOutlined />, perms: ['reports.view'] },
+        ],
+    },
+    {
+        title: 'Pay Items', icon: <WalletOutlined />, items: [
+            { path: 'allowances', label: 'Allowances', icon: <PlusCircleOutlined />, perms: ['payrollEntry.manage'] },
+            { path: 'bonuses', label: 'Bonuses & Incentives', icon: <GiftOutlined />, perms: ['payrollEntry.manage'] },
+            { path: 'deductions', label: 'Deductions', icon: <MinusCircleOutlined />, perms: ['payrollEntry.manage'] },
+            { path: 'advances', label: 'Salary Advances', icon: <WalletOutlined />, perms: ['advance.manage'] },
+            { path: 'loans', label: 'Loans', icon: <AccountBookOutlined />, perms: ['loan.manage'] },
+            { path: 'external-payments', label: 'External Payments', icon: <SwapOutlined />, perms: ['externalPayment.manage', 'externalPayment.approve'] },
+        ],
+    },
+    {
+        title: 'Organization', icon: <ApartmentOutlined />, items: [
+            { path: 'org/company', label: 'Companies', icon: <BankOutlined />, perms: ['org.manage'] },
+            { path: 'org/branch', label: 'Branches', icon: <BranchesOutlined />, perms: ['org.manage'] },
+            { path: 'org/department', label: 'Departments', icon: <ApartmentOutlined />, perms: ['org.manage'] },
+            { path: 'designations', label: 'Designations', icon: <IdcardOutlined />, perms: ['org.manage'] },
+            { path: 'org/hub', label: 'Hubs & Locations', icon: <EnvironmentOutlined />, perms: ['org.manage'] },
+            { path: 'org/costCenter', label: 'Cost Centers', icon: <FundOutlined />, perms: ['org.manage'] },
+            { path: 'holidays', label: 'Holidays', icon: <CalendarOutlined />, perms: ['org.manage'] },
+        ],
+    },
+    {
+        title: 'Biometrics', icon: <WifiOutlined />, items: [
+            { path: 'biometric', label: 'Devices', icon: <WifiOutlined />, perms: ['biometric.manage'] },
+            { path: 'biometric/mappings', label: 'User IDs', icon: <UserSwitchOutlined />, perms: ['biometric.manage'] },
+            { path: 'biometric/events', label: 'Events', icon: <HistoryOutlined />, perms: ['biometric.manage'] },
+        ],
+    },
+    {
+        title: 'HR Setup', icon: <ControlOutlined />, items: [
+            { path: 'salary-components', label: 'Salary Components', icon: <CalculatorOutlined />, perms: ['salaryConfig.manage'] },
+            { path: 'salary-structures', label: 'Salary Structures', icon: <ProfileOutlined />, perms: ['salaryConfig.manage'] },
+            { path: 'leave-types', label: 'Leave Types', icon: <TagsOutlined />, perms: ['leave.manage'] },
+            { path: 'overtime-types', label: 'Overtime Types', icon: <ClockCircleOutlined />, perms: ['salaryConfig.manage'] },
             { path: 'lookups', label: 'Lists & Lookups', icon: <AuditOutlined />, perms: ['settings.manage'] },
             { path: 'settings', label: 'Payroll Settings', icon: <SettingOutlined />, perms: ['settings.manage', 'roles.manage', 'audit.view', 'salaryConfig.manage'] },
         ],

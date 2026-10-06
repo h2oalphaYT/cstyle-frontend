@@ -214,16 +214,6 @@ h1, h2, h3, h4, h5, h6 {
   background: #C5A880;
 }
 
-/* Ant Design customization for dark mode */
-.dark .ant-input,
-.dark .ant-select-selector {
-  @apply bg-gray-800 border-gray-700 text-white;
-}
-
-.dark .ant-btn-default {
-  @apply bg-gray-800 border-gray-700 text-white;
-}
-
 /* Video overlay */
 .video-overlay {
   position: absolute;
@@ -240,80 +230,74 @@ h1, h2, h3, h4, h5, h6 {
   @apply max-w-7xl mx-auto px-6 lg:px-8;
 }
 
-/* Ant Design Dark Mode Customization for Admin Dashboard */
-.dark .ant-table {
-  background: #1F2937 !important;
-  color: #F1F1F1 !important;
+/* Admin panel palette. Ant Design gets the same values from src/admin/theme.tsx,
+   so Tailwind classes (text-admin-*, border-admin-*) and antd components always agree. */
+:root {
+  --admin-layout: #F5F5F4;
+  --admin-surface: #FFFFFF;
+  --admin-hover: #F3F4F6;
+  --admin-border: #E5E7EB;
+  --admin-text: #121212;
+  --admin-muted: #6B7280;
+  --admin-accent: #8C6D12;
 }
 
-.dark .ant-table-thead > tr > th {
-  background: #111827 !important;
-  color: #F1F1F1 !important;
-  border-bottom: 1px solid #374151 !important;
+.dark {
+  --admin-layout: #0F0F10;
+  --admin-surface: #18181B;
+  --admin-hover: #26262B;
+  --admin-border: #2A2A2F;
+  --admin-text: #F1F1F1;
+  --admin-muted: #A1A1AA;
+  --admin-accent: #E8C35A;
 }
 
-.dark .ant-table-tbody > tr > td {
-  border-bottom: 1px solid #374151 !important;
-  color: #F1F1F1 !important;
+/* Admin charts (recharts): grid, axes and tooltips follow the admin theme. */
+.admin-content .recharts-cartesian-grid line {
+  stroke: var(--admin-border);
+}
+.admin-content .recharts-cartesian-axis-line,
+.admin-content .recharts-cartesian-axis-tick-line {
+  stroke: var(--admin-border);
+}
+.admin-content .recharts-cartesian-axis-tick-value {
+  fill: var(--admin-muted);
+}
+.admin-content .recharts-default-tooltip {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 8px;
+}
+.admin-content .recharts-tooltip-label {
+  color: var(--admin-text);
+}
+.admin-content .recharts-tooltip-cursor {
+  fill: var(--admin-hover);
+}
+.admin-content .recharts-legend-item-text {
+  color: var(--admin-text) !important;
 }
 
-.dark .ant-table-tbody > tr:hover > td {
-  background: #374151 !important;
+/* Admin side nav: compact submenu rows and a subtle scrollbar in both themes. */
+.admin-nav .ant-menu-sub.ant-menu-inline > .ant-menu-item {
+  height: 34px;
+  line-height: 34px;
+  font-size: 13px;
 }
-
-.dark .ant-modal-content {
-  background: #1F2937 !important;
-  color: #F1F1F1 !important;
+.admin-nav .ant-menu-item-group-title {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  padding-top: 14px;
 }
-
-.dark .ant-modal-header {
-  background: #111827 !important;
-  border-bottom: 1px solid #374151 !important;
+.admin-nav .ant-menu-item-selected a,
+.admin-nav .ant-menu-item-selected .anticon {
+  color: #121212;
+  font-weight: 500;
 }
-
-.dark .ant-modal-title {
-  color: #F1F1F1 !important;
-}
-
-.dark .ant-form-item-label > label {
-  color: #F1F1F1 !important;
-}
-
-.dark .ant-input-number-input {
-  background: #111827 !important;
-  border-color: #374151 !important;
-  color: #F1F1F1 !important;
-}
-
-.dark .ant-select-dropdown {
-  background: #1F2937 !important;
-}
-
-.dark .ant-select-item {
-  color: #F1F1F1 !important;
-}
-
-.dark .ant-select-item-option-selected {
-  background: #374151 !important;
-}
-
-.dark .ant-upload {
-  background: #111827 !important;
-  border-color: #374151 !important;
-}
-
-.dark .ant-descriptions-item-label {
-  color: #9CA3AF !important;
-  background: #111827 !important;
-}
-
-.dark .ant-descriptions-item-content {
-  color: #F1F1F1 !important;
-  background: #1F2937 !important;
-}
-
-.dark .ant-card-head {
-  border-bottom-color: #374151 !important;
+.admin-nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-border) transparent;
 }
 
 /* Admin — Deleted product rows */

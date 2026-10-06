@@ -12,7 +12,6 @@ const AnalyticsPage = () => {
     const [data, setData] = useState<Point[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     useEffect(() => {
         setLoading(true);
@@ -51,13 +50,12 @@ const AnalyticsPage = () => {
         URL.revokeObjectURL(a.href);
     };
 
-    const cardClass = `${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`;
-    const titleClass = isDarkMode ? 'text-white' : 'text-brand-black';
+    const cardClass = 'rounded-xl';
 
     return (
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
-                <h1 className={`text-3xl font-bold font-poppins m-0 ${titleClass}`}>Sales Analytics</h1>
+                <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Sales Analytics</h1>
                 <div className="flex gap-3">
                     <Select value={range} onChange={setRange} className="w-40" options={[
                         { value: 'week', label: 'Last 7 days' }, { value: 'month', label: 'Last 30 days' }, { value: 'year', label: 'Last 12 months' },
@@ -74,26 +72,26 @@ const AnalyticsPage = () => {
                         <Col xs={24} md={8}><Card className={cardClass}><Statistic title="Orders" value={totals.orders} /></Card></Col>
                         <Col xs={24} md={8}><Card className={cardClass}><Statistic title="Average order value" value={money(totals.aov)} /></Card></Col>
                     </Row>
-                    <Card title={<span className={titleClass}>Revenue</span>} className={cardClass}>
+                    <Card title="Revenue" className={cardClass}>
                         {!totals.orders ? <Empty description="No orders in this period" /> : (
                             <ResponsiveContainer width="100%" height={300}>
                                 <AreaChart data={series}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#374151' : '#E5E7EB'} />
-                                    <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                                    <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="label" fontSize={12} />
+                                    <YAxis fontSize={12} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
                                     <Tooltip formatter={(v: number) => money(v)} />
                                     <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#D4AF37" fill="#D4AF37" fillOpacity={0.35} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         )}
                     </Card>
-                    <Card title={<span className={titleClass}>Orders</span>} className={cardClass}>
+                    <Card title="Orders" className={cardClass}>
                         {!totals.orders ? <Empty /> : (
                             <ResponsiveContainer width="100%" height={260}>
                                 <BarChart data={series}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#374151' : '#E5E7EB'} />
-                                    <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                                    <YAxis allowDecimals={false} stroke="#9CA3AF" fontSize={12} />
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="label" fontSize={12} />
+                                    <YAxis allowDecimals={false} fontSize={12} />
                                     <Tooltip />
                                     <Bar dataKey="orders" name="Orders" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                                 </BarChart>

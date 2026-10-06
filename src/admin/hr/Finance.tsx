@@ -117,7 +117,7 @@ export function PayrollEntriesPage({ kind }: { kind: 'allowance' | 'bonus' | 'de
                     { title: 'Employee', render: (_, e) => empText(e.employee) },
                     { title: 'Component', render: (_, e) => <Tag>{e.component?.name}</Tag> },
                     { title: 'Month', dataIndex: 'period', width: 100 },
-                    { title: 'Amount', dataIndex: 'amount', align: 'right', render: (a: number, e) => <span>{rs(a)}{e.quantity != null && e.rate != null ? <span className="text-xs text-gray-500"> ({e.quantity} × {e.rate})</span> : ''}</span> },
+                    { title: 'Amount', dataIndex: 'amount', align: 'right', render: (a: number, e) => <span>{rs(a)}{e.quantity != null && e.rate != null ? <span className="text-xs text-admin-muted"> ({e.quantity} × {e.rate})</span> : ''}</span> },
                     { title: 'Note', dataIndex: 'note' },
                     { title: 'Status', dataIndex: 'status', width: 110, render: (s: string) => <StatusTag status={s} /> },
                     ...(can('payrollEntry.manage') ? [{ title: '', width: 60, render: (_: unknown, e: Entry) => e.status !== 'processed' && <Button type="text" danger icon={<DeleteOutlined />} onClick={async () => { if (await act(() => http.delete(`/payroll-entries/${e.id}`), 'Deleted')) reload(); }} /> }] : []),

@@ -15,7 +15,6 @@ const CustomersPage = () => {
     const [search, setSearch] = useState('');
     const [role, setRole] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -50,7 +49,7 @@ const CustomersPage = () => {
     });
 
     const columns: ColumnsType<Customer> = [
-        { title: 'Name', dataIndex: 'name', render: (n: string, c) => <div><div className="font-medium">{n}</div><div className="text-xs text-gray-500">{c.email}</div></div> },
+        { title: 'Name', dataIndex: 'name', render: (n: string, c) => <div><div className="font-medium">{n}</div><div className="text-xs text-admin-muted">{c.email}</div></div> },
         { title: 'Phone', dataIndex: 'phone', render: (p?: string) => p || '—' },
         { title: 'Orders', dataIndex: 'orders', width: 80 },
         { title: 'Spent', dataIndex: 'totalSpent', width: 130, render: (s: number) => `Rs ${Math.round(s).toLocaleString()}` },
@@ -75,10 +74,10 @@ const CustomersPage = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Customers</h1>
-                <p className="text-gray-500 m-0">{total} registered user{total === 1 ? '' : 's'}. Guest checkouts appear in Orders.</p>
+                <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Customers</h1>
+                <p className="text-admin-muted m-0">{total} registered user{total === 1 ? '' : 's'}. Guest checkouts appear in Orders.</p>
             </div>
-            <Card className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`}>
+            <Card className="rounded-xl">
                 <div className="flex flex-wrap gap-3 mb-4">
                     <Input.Search allowClear placeholder="Name, email or phone" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full md:w-80" />
                     <Select allowClear placeholder="All roles" value={role} onChange={(v) => { setRole(v); setPage(1); }} className="w-36"
@@ -87,7 +86,7 @@ const CustomersPage = () => {
                 <Table rowKey="id" columns={columns} dataSource={rows} loading={loading} scroll={{ x: 900 }}
                     pagination={{ current: page, pageSize: PAGE_SIZE, total, onChange: setPage }} />
             </Card>
-            <Messages cardClass={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`} />
+            <Messages cardClass="rounded-xl" />
         </div>
     );
 };
@@ -133,7 +132,7 @@ const Messages = ({ cardClass }: { cardClass: string }) => {
                 scroll={{ x: 800 }}
                 pagination={{ pageSize: 10 }}
                 columns={[
-                    { title: 'From', render: (_, m) => <div><div className="font-medium">{m.name}</div><div className="text-xs text-gray-500">{m.email}</div></div> },
+                    { title: 'From', render: (_, m) => <div><div className="font-medium">{m.name}</div><div className="text-xs text-admin-muted">{m.email}</div></div> },
                     { title: 'Subject', dataIndex: 'subject', width: 160 },
                     { title: 'Message', dataIndex: 'message', render: (t: string) => <span className="whitespace-pre-line">{t}</span> },
                     { title: 'Received', dataIndex: 'createdAt', width: 120, render: (d: string) => new Date(d).toLocaleDateString() },

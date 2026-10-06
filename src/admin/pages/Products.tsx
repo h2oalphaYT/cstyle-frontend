@@ -83,7 +83,6 @@ const ProductsPage = () => {
     const galleryInput = useRef<HTMLInputElement>(null);
     const thumbInput = useRef<HTMLInputElement>(null);
 
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     useEffect(() => {
         categoriesApi.list(true).then(res => setCategories(res.data)).catch(() => message.error('Could not load categories'));
@@ -324,7 +323,7 @@ const ProductsPage = () => {
             render: (name: string, p) => (
                 <div>
                     <div className="font-medium">{name}</div>
-                    <div className="text-xs text-gray-500">{p.sku} · {p.images.length} image{p.images.length === 1 ? '' : 's'}</div>
+                    <div className="text-xs text-admin-muted">{p.sku} · {p.images.length} image{p.images.length === 1 ? '' : 's'}</div>
                 </div>
             ),
         },
@@ -333,7 +332,7 @@ const ProductsPage = () => {
             title: 'Price (LKR)',
             width: 140,
             render: (_, p) => p.onSale ? (
-                <div><span className="font-medium">Rs {p.salePrice!.toLocaleString()}</span><br /><span className="text-xs line-through text-gray-400">Rs {p.price.toLocaleString()}</span></div>
+                <div><span className="font-medium">Rs {p.salePrice!.toLocaleString()}</span><br /><span className="text-xs line-through text-admin-muted">Rs {p.price.toLocaleString()}</span></div>
             ) : <span>Rs {p.price.toLocaleString()}</span>,
         },
         {
@@ -372,19 +371,19 @@ const ProductsPage = () => {
         },
     ];
 
-    const cardClass = `${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`;
+    const cardClass = 'rounded-xl';
 
     return (
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Products</h1>
-                    <p className="text-gray-500 m-0">{total} product{total === 1 ? '' : 's'} in MongoDB</p>
+                    <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Products</h1>
+                    <p className="text-admin-muted m-0">{total} product{total === 1 ? '' : 's'} in MongoDB</p>
                 </div>
                 <Space>
                     <Button icon={<ReloadOutlined />} onClick={loadProducts}>Refresh</Button>
                     <Button type="primary" icon={<PlusOutlined />} size="large" onClick={() => openEditor(null)}
-                        className="bg-brand-gold hover:bg-brand-gold-dark border-0 text-brand-black font-semibold">
+                        className="font-semibold">
                         Add Product
                     </Button>
                 </Space>
@@ -425,7 +424,7 @@ const ProductsPage = () => {
                 extra={(
                     <Space>
                         <Button onClick={() => setEditorOpen(false)}>Cancel</Button>
-                        <Button type="primary" loading={saving} disabled={uploading} onClick={save} className="bg-brand-gold border-0 text-brand-black font-semibold">
+                        <Button type="primary" loading={saving} disabled={uploading} onClick={save} className="font-semibold">
                             {editing ? 'Save Changes' : 'Create Product'}
                         </Button>
                     </Space>
@@ -495,21 +494,21 @@ const ProductsPage = () => {
                                 forceRender: true,
                                 children: (
                                     <div className="space-y-4">
-                                        <p className="text-gray-500 text-sm m-0">JPG, PNG or WEBP up to 5 MB. Images are converted to WEBP and stored on the server. The starred image is the thumbnail shown on product cards.</p>
+                                        <p className="text-admin-muted text-sm m-0">JPG, PNG or WEBP up to 5 MB. Images are converted to WEBP and stored on the server. The starred image is the thumbnail shown on product cards.</p>
                                         <Space wrap>
                                             <input ref={thumbInput} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={(e) => uploadThumbnail(e.target.files)} />
                                             <input ref={galleryInput} type="file" accept="image/jpeg,image/png,image/webp" multiple style={{ display: 'none' }} onChange={(e) => uploadGallery(e.target.files)} />
                                             <Button icon={<UploadOutlined />} loading={uploading} onClick={() => thumbInput.current?.click()}>Upload Thumbnail</Button>
-                                            <Button type="primary" icon={<UploadOutlined />} loading={uploading} onClick={() => galleryInput.current?.click()} className="bg-brand-gold border-0 text-brand-black">
+                                            <Button type="primary" icon={<UploadOutlined />} loading={uploading} onClick={() => galleryInput.current?.click()}>
                                                 Upload Images
                                             </Button>
                                         </Space>
                                         {images.length === 0 ? (
-                                            <div className="border border-dashed border-gray-400 rounded-lg p-10 text-center text-gray-500">No images yet. Products without images show a placeholder in the store.</div>
+                                            <div className="border border-dashed border-admin-border rounded-lg p-10 text-center text-admin-muted">No images yet. Products without images show a placeholder in the store.</div>
                                         ) : (
                                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                                 {images.map((url, i) => (
-                                                    <div key={url} className={`relative rounded-lg overflow-hidden border-2 ${thumbnail === url ? 'border-yellow-500' : 'border-transparent'}`}>
+                                                    <div key={url} className={`relative rounded-lg overflow-hidden border-2 ${thumbnail === url ? 'border-brand-gold' : 'border-transparent'}`}>
                                                         <SafeImage src={url} alt={`Image ${i + 1}`} wrapperClassName="w-full aspect-[3/4]" className="w-full h-full object-cover" />
                                                         {thumbnail === url && <Tag color="gold" className="absolute top-2 left-2 m-0">Primary</Tag>}
                                                         <div className="absolute bottom-0 inset-x-0 flex justify-between bg-black/60 px-1 py-1">
@@ -524,7 +523,7 @@ const ProductsPage = () => {
                                                 ))}
                                             </div>
                                         )}
-                                        <p className="text-xs text-gray-500 m-0">Removed images are deleted from storage when you save.</p>
+                                        <p className="text-xs text-admin-muted m-0">Removed images are deleted from storage when you save.</p>
                                     </div>
                                 ),
                             },
@@ -562,8 +561,8 @@ const ProductsPage = () => {
                                                     const on = colors.some(x => x.name === c.name);
                                                     return (
                                                         <button type="button" key={c.name} onClick={() => toggleColor(c)}
-                                                            className={`flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs ${on ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-300'}`}>
-                                                            <span className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: c.hex }} />{c.name}
+                                                            className={`flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs ${on ? 'border-brand-gold bg-brand-gold/10' : 'border-admin-border'}`}>
+                                                            <span className="w-4 h-4 rounded-full border border-admin-border" style={{ backgroundColor: c.hex }} />{c.name}
                                                         </button>
                                                     );
                                                 })}
@@ -583,7 +582,7 @@ const ProductsPage = () => {
                                             <h4 className="font-semibold mb-2">Sizes</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {[...STANDARD_SIZES, ...sizes.filter(s => !STANDARD_SIZES.includes(s))].map(s => (
-                                                    <Tag.CheckableTag key={s} checked={sizes.includes(s)} onChange={() => toggleSize(s)} className="border border-gray-300 px-3 py-1">{s}</Tag.CheckableTag>
+                                                    <Tag.CheckableTag key={s} checked={sizes.includes(s)} onChange={() => toggleSize(s)} className="border border-admin-border px-3 py-1">{s}</Tag.CheckableTag>
                                                 ))}
                                             </div>
                                             <Input.Search className="mt-3 w-60" placeholder="Custom size" enterButton="Add" onSearch={(v) => { const s = v.trim().toUpperCase(); if (s && !sizes.includes(s)) setSizes(p => [...p, s]); }} />
@@ -594,7 +593,7 @@ const ProductsPage = () => {
                                                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                                                     <h4 className="font-semibold m-0 flex items-center gap-2"><AppstoreOutlined /> Variant stock — total {matrixTotal}</h4>
                                                     <Space>
-                                                        <span className="text-xs text-gray-500">Set all to</span>
+                                                        <span className="text-xs text-admin-muted">Set all to</span>
                                                         <InputNumber min={0} size="small" placeholder="qty" onPressEnter={(e) => fillAll(Number((e.target as HTMLInputElement).value) || 0)} />
                                                     </Space>
                                                 </div>

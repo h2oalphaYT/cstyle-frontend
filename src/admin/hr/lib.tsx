@@ -23,11 +23,10 @@ export const StatusTag = ({ status }: { status?: string | null }) => (
 );
 
 export const PageHeader = ({ title, subtitle, extra }: { title: string; subtitle?: ReactNode; extra?: ReactNode }) => {
-    const dark = document.documentElement.classList.contains('dark');
     return (
         <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <div>
-                <h1 className={`text-2xl font-bold font-poppins m-0 ${dark ? 'text-white' : 'text-brand-black'}`}>{title}</h1>
+                <h1 className="text-2xl font-bold font-poppins m-0 text-admin-text">{title}</h1>
                 {subtitle && <Typography.Text type="secondary">{subtitle}</Typography.Text>}
             </div>
             {extra && <Space wrap>{extra}</Space>}
@@ -35,7 +34,8 @@ export const PageHeader = ({ title, subtitle, extra }: { title: string; subtitle
     );
 };
 
-export const cardClass = () => (document.documentElement.classList.contains('dark') ? 'bg-gray-800 border-gray-700 rounded-xl' : 'bg-white rounded-xl');
+/** Card styling for admin pages; colours come from the admin theme, so cards match in light and dark. */
+export const cardClass = () => 'rounded-xl';
 
 // ── Data hooks ──────────────────────────────────────────────────────
 /** Loads a paginated list from the API and reloads when params change. */

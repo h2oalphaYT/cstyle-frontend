@@ -22,7 +22,6 @@ const InventoryPage = () => {
     const [draft, setDraft] = useState<ProductVariant[]>([]);
     const [simpleStock, setSimpleStock] = useState(0);
     const [saving, setSaving] = useState(false);
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     useEffect(() => { categoriesApi.list(true).then(r => setCategories(r.data)).catch(() => undefined); }, []);
 
@@ -78,16 +77,16 @@ const InventoryPage = () => {
 
     const columns: ColumnsType<Product> = [
         { title: '', dataIndex: 'thumbnail', width: 64, render: (src: string) => <SafeImage src={src} alt="" wrapperClassName="w-10 h-12 rounded" className="w-full h-full object-cover" /> },
-        { title: 'Product', render: (_, p) => <div><div className="font-medium">{p.name}</div><div className="text-xs text-gray-500">{p.sku} · {p.category?.name}</div></div> },
+        { title: 'Product', render: (_, p) => <div><div className="font-medium">{p.name}</div><div className="text-xs text-admin-muted">{p.sku} · {p.category?.name}</div></div> },
         {
             title: 'Variants', render: (_, p) => p.variants.length ? (
                 <div className="flex flex-wrap gap-1 max-w-md">
                     {p.variants.filter(v => v.stock <= Math.max(2, Math.floor(p.lowStockThreshold / 3))).slice(0, 6).map(v => (
                         <Tag key={v._id} color={v.stock === 0 ? 'red' : 'orange'}>{[v.color, v.size].filter(Boolean).join(' ')}: {v.stock}</Tag>
                     ))}
-                    <span className="text-xs text-gray-500">{p.variants.length} variants</span>
+                    <span className="text-xs text-admin-muted">{p.variants.length} variants</span>
                 </div>
-            ) : <span className="text-xs text-gray-500">No variants</span>,
+            ) : <span className="text-xs text-admin-muted">No variants</span>,
         },
         {
             title: 'Total stock', dataIndex: 'stock', width: 130, render: (s: number, p) => (
@@ -98,11 +97,11 @@ const InventoryPage = () => {
         { title: '', width: 110, render: (_, p) => <Button icon={<EditOutlined />} onClick={() => openEditor(p)}>Adjust</Button> },
     ];
 
-    const cardClass = `${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`;
+    const cardClass = 'rounded-xl';
 
     return (
         <div className="space-y-6">
-            <h1 className={`text-3xl font-bold font-poppins m-0 ${isDarkMode ? 'text-white' : 'text-brand-black'}`}>Stock / Inventory</h1>
+            <h1 className="text-3xl font-bold font-poppins m-0 text-admin-text">Stock / Inventory</h1>
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={8}><Card className={cardClass}><Statistic title="Products" value={total} /></Card></Col>
@@ -130,10 +129,10 @@ const InventoryPage = () => {
                             <thead><tr><th className="text-left p-2">Colour</th><th className="text-left p-2">Size</th><th className="text-left p-2">SKU</th><th className="p-2">Stock</th></tr></thead>
                             <tbody>
                                 {draft.map((v, i) => (
-                                    <tr key={v._id || i} className="border-t border-gray-200 dark:border-gray-700">
+                                    <tr key={v._id || i} className="border-t border-admin-border">
                                         <td className="p-2">{v.color || '—'}</td>
                                         <td className="p-2">{v.size || '—'}</td>
-                                        <td className="p-2 text-xs text-gray-500">{v.sku}</td>
+                                        <td className="p-2 text-xs text-admin-muted">{v.sku}</td>
                                         <td className="p-2 text-center">
                                             <InputNumber min={0} size="small" value={v.stock} aria-label={`Stock for ${v.color} ${v.size}`}
                                                 onChange={(val) => setDraft(d => d.map((x, j) => (j === i ? { ...x, stock: Math.max(0, Number(val) || 0) } : x)))} />

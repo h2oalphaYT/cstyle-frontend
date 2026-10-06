@@ -12,7 +12,6 @@ const SettingsPage = () => {
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
     const [passwordForm] = Form.useForm();
-    const isDarkMode = document.documentElement.classList.contains('dark');
 
     useEffect(() => { configApi.get().then(r => setConfig(r.data)).catch(() => undefined); }, []);
 
@@ -42,17 +41,16 @@ const SettingsPage = () => {
         }
     };
 
-    const cardClass = `${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-xl`;
-    const titleClass = isDarkMode ? 'text-white' : 'text-brand-black';
+    const cardClass = 'rounded-xl';
 
     return (
         <div className="space-y-6 max-w-3xl">
-            <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className={`text-3xl font-bold font-poppins ${titleClass}`}>
+            <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-3xl font-bold font-poppins text-admin-text">
                 Settings
             </motion.h1>
 
-            <Card title={<span className={titleClass}>Store Settings</span>} className={cardClass}>
-                <p className="text-gray-500">These values come from the backend <code>.env</code> file (see README) and apply to every order.</p>
+            <Card title="Store Settings" className={cardClass}>
+                <p className="text-admin-muted">These values come from the backend <code>.env</code> file (see README) and apply to every order.</p>
                 <Descriptions column={1} bordered size="small">
                     <Descriptions.Item label="Currency">{config?.currency || '…'}</Descriptions.Item>
                     <Descriptions.Item label="Shipping fee">{config ? `Rs ${config.shippingFee.toLocaleString()}` : '…'}</Descriptions.Item>
@@ -62,22 +60,20 @@ const SettingsPage = () => {
                 </Descriptions>
             </Card>
 
-            <Card title={<span className={titleClass}>Admin Profile</span>} className={cardClass}>
+            <Card title="Admin Profile" className={cardClass}>
                 <Form layout="vertical" initialValues={{ name: user?.name, phone: user?.phone }} onFinish={saveProfile}>
                     <Form.Item label="Email"><Input value={user?.email} disabled /></Form.Item>
                     <Form.Item label="Name" name="name" rules={[{ required: true }]}><Input size="large" /></Form.Item>
                     <Form.Item label="Phone" name="phone"><Input size="large" /></Form.Item>
-                    <Button type="primary" htmlType="submit" size="large" icon={<SaveOutlined />} loading={savingProfile}
-                        className="bg-brand-gold hover:bg-brand-gold-dark border-0 text-brand-black">Save Profile</Button>
+                    <Button type="primary" htmlType="submit" size="large" icon={<SaveOutlined />} loading={savingProfile}>Save Profile</Button>
                 </Form>
             </Card>
 
-            <Card title={<span className={titleClass}>Change Password</span>} className={cardClass}>
+            <Card title="Change Password" className={cardClass}>
                 <Form form={passwordForm} layout="vertical" onFinish={changePassword}>
                     <Form.Item label="Current Password" name="currentPassword" rules={[{ required: true }]}><Input.Password size="large" autoComplete="current-password" /></Form.Item>
                     <Form.Item label="New Password" name="newPassword" rules={[{ required: true }, { min: 8, message: 'At least 8 characters' }]}><Input.Password size="large" autoComplete="new-password" /></Form.Item>
-                    <Button type="primary" htmlType="submit" size="large" loading={savingPassword}
-                        className="bg-brand-gold hover:bg-brand-gold-dark border-0 text-brand-black">Change Password</Button>
+                    <Button type="primary" htmlType="submit" size="large" loading={savingPassword}>Change Password</Button>
                 </Form>
             </Card>
         </div>
