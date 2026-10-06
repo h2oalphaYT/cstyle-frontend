@@ -122,6 +122,102 @@ export function AttendancePage() {
     );
 }
 
+// ── Monthly salary sheet import ─────────────────────────────────────
+interface SheetRow {
+    row: number; problems: string[]; warnings: string[];
+    data: { employeeCode: string; name: string; attendanceRequired: boolean; workedDays: number; sheetDays: number; ot: number; late: number; sundayDays: number; sundayHours: number; advance: number; sheetSalary: number };
+}
+interface SheetBatch { _id?: string; id?: string; fileName: string; period: string; validRows: number; errorRows: number; rows: SheetRow[] }
+interface SheetHistory { id: string; period: string; fileName: string; status: string; importedCount: number; importedAt: string }
+
+const MonthlySheetImport = () => {
+    const { modal } = App.useApp();
+    const act = useAction();
+    const [period, setPeriod] = useState(() => {
+        const d = new Date();
+        d.setDate(0); // last month: sheets are usually done after the month ends
+        return d.toISOString().slice(0, 7);
+    });
+    const [batch, setBatch] = useState<SheetBatch | null>(null);
+    const [busy, setBusy] = useState(false);
+    const [done, setDone] = useState(false);
+    const history = useList<SheetHistory>('/attendance/monthly-sheet');
+    const batchId = batch ? batch._id || batch.id : '';
+
+    const validate = async (file: File) => {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('period', period);
+        setBusy(true);
+        const r = await act(() => upload<SheetBatch>('/attendance/monthly-sheet/validate', form));
+        setBusy(false);
+        if (r) { setBatch(r.data); setDone(false); }
+        return false;
+    };
+    const commit = async () => {
+        setBusy(true);
+        const r = await act(() => http.post(`/attendance/monthly-sheet/${batchId}/commit`), 'Sheet imported');
+        setBusy(false);
+        if (r) { setDone(true); history.reload(); }
+    };
+    const revert = (h: SheetHistory) => modal.confirm({
+        title: `Undo the ${h.period} import?`, okType: 'danger', okText: 'Undo import',
+        content: 'Attendance, overtime and advances created by this file are removed. Not possible after payroll for the month is approved or the month is locked.',
+        onOk: async () => { if (await act(() => http.post(`/attendance/monthly-sheet/${h.id}/revert`), 'Import undone')) history.reload(); },
+    });
+
+    return (
+        <Card className={cardClass()} title="Import monthly salary sheet" extra={<Tag color="gold">Your Excel layout</Tag>}>
+            <Typography.Paragraph type="secondary" className="!mb-3">
+                Upload the monthly sheet as you keep it today: day columns 1–31 (1, 0.5, 0, and "1a" for a Sunday worked) plus the OT, LATE HOURS, SUNDAYS,
+                SUNDY II (extra Sunday hours) and ADVANCE columns. Employees are matched by the code next to NAME. Re-uploading the same month replaces the earlier import.
+            </Typography.Paragraph>
+            <Space wrap className="mb-3">
+                <span>Month of the sheet</span>
+                <Input type="month" value={period} onChange={(e) => setPeriod(e.target.value)} className="w-40" />
+            </Space>
+            <Upload.Dragger accept=".xlsx" beforeUpload={validate} showUploadList={false} disabled={busy || !period}>
+                <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+                <p>Drop the monthly salary sheet (.xlsx) here, or click to choose</p>
+            </Upload.Dragger>
+            {batch && (
+                <div className="mt-4">
+                    <Space wrap className="mb-3">
+                        <Tag>{batch.fileName}</Tag><Tag>{batch.period}</Tag><Tag color="green">{batch.validRows} ready</Tag>
+                        <Tag color={batch.errorRows ? 'red' : 'default'}>{batch.errorRows} with errors</Tag>
+                        {!done && <Button type="primary" loading={busy} disabled={!batch.validRows} onClick={commit}>Import {batch.validRows} employee(s)</Button>}
+                        <Button onClick={() => { setBatch(null); setDone(false); }}>Start over</Button>
+                    </Space>
+                    {done && <Alert type="success" showIcon className="mb-3" message={<span>Imported. Now open <Link to="/admin/hr/payroll">Payroll Processing</Link> and create the {batch.period} run; the Salary column below is what the system should match.</span>} />}
+                    <Table size="small" rowKey="row" dataSource={batch.rows} pagination={false} scroll={{ x: 1000 }} columns={[
+                        { title: 'Employee', render: (_, r) => <span><b>{r.data.employeeCode}</b> {r.data.name}</span> },
+                        { title: 'Days', render: (_, r) => (r.data.attendanceRequired ? <span>{r.data.workedDays}{r.data.sheetDays && r.data.sheetDays !== r.data.workedDays ? <Typography.Text type="warning"> (sheet {r.data.sheetDays})</Typography.Text> : ''}</span> : <Tag>fixed</Tag>), width: 110 },
+                        { title: 'OT h', render: (_, r) => r.data.ot || '', width: 60 },
+                        { title: 'Late h', render: (_, r) => r.data.late || '', width: 70 },
+                        { title: 'Sundays', render: (_, r) => [r.data.sundayDays ? `${r.data.sundayDays} day` : '', r.data.sundayHours ? `${r.data.sundayHours} h` : ''].filter(Boolean).join(' + '), width: 110 },
+                        { title: 'Advance', render: (_, r) => (r.data.advance ? r.data.advance.toLocaleString() : ''), width: 90 },
+                        { title: 'Sheet salary', render: (_, r) => (r.data.sheetSalary ? r.data.sheetSalary.toLocaleString('en-LK', { minimumFractionDigits: 2 }) : ''), align: 'right', width: 120 },
+                        { title: 'Check', render: (_, r) => r.problems.length ? <Typography.Text type="danger">{r.problems.join('; ')}</Typography.Text>
+                            : r.warnings.length ? <Typography.Text type="warning">{r.warnings.join('; ')}</Typography.Text> : <Typography.Text type="success">OK</Typography.Text> },
+                    ]} />
+                </div>
+            )}
+            {history.data.length > 0 && (
+                <div className="mt-4">
+                    <Typography.Text strong>Previous sheet imports</Typography.Text>
+                    <Table size="small" rowKey="id" className="mt-2" dataSource={history.data} pagination={{ pageSize: 5, hideOnSinglePage: true }} columns={[
+                        { title: 'Month', dataIndex: 'period', width: 90 }, { title: 'File', dataIndex: 'fileName' },
+                        { title: 'Employees', dataIndex: 'importedCount', width: 100 },
+                        { title: 'Imported', dataIndex: 'importedAt', render: (d: string) => (d ? new Date(d).toLocaleString() : '—'), width: 170 },
+                        { title: 'Status', dataIndex: 'status', render: (s: string) => <StatusTag status={s} />, width: 100 },
+                        { title: '', width: 90, render: (_, h) => h.status === 'imported' && <Button size="small" danger onClick={() => revert(h)}>Undo</Button> },
+                    ]} />
+                </div>
+            )}
+        </Card>
+    );
+};
+
 // ── Excel import / export ───────────────────────────────────────────
 interface Batch { _id: string; fileName: string; status: string; totalRows: number; validRows: number; errorRows: number; rows: { row: number; data: Record<string, string | number | null>; problems: string[]; warnings: string[] }[] }
 
@@ -159,8 +255,9 @@ export function ImportExportPage() {
     return (
         <div>
             <PageHeader title="Excel Import / Export" subtitle="Bring attendance in from spreadsheets and take payroll and attendance out to Excel" />
+            {can('attendance.import') && <div className="mb-4"><MonthlySheetImport /></div>}
             {can('attendance.import') && (
-                <Card className={cardClass()} title="Import attendance">
+                <Card className={cardClass()} title="Import daily attendance (template)">
                     <Steps current={step} className="mb-6" items={[{ title: 'Download template' }, { title: 'Upload & validate' }, { title: 'Review' }, { title: 'Imported' }]} />
                     <Space wrap className="mb-4">
                         <Button icon={<DownloadOutlined />} onClick={() => dl('/attendance/import/template')}>Download template</Button>
