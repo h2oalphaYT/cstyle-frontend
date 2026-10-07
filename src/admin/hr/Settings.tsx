@@ -35,7 +35,9 @@ const SettingFields = ({ override = false }: { override?: boolean }) => {
                     {num('attendanceRoundingMinutes', 'Round worked time down to (minutes)')}
                     {num('halfDayMinHours', 'Half day if worked at least (hours)', { step: 0.5 })}
                     <Col xs={24} md={8}><Form.Item name="missingAttendance" label="Scheduled day with no record"><Select options={[{ value: 'ignore', label: 'Ignore (count as worked)' }, { value: 'absent', label: 'Treat as absent / no pay' }]} allowClear={override} /></Form.Item></Col>
-                    {sw('allowLeaveBeyondBalance', 'Allow leave beyond balance')}
+                    {sw('allowLeaveBeyondBalance', 'Leave beyond balance is still paid')}
+                    {sw('excessLeaveAsNoPay', 'Leave beyond balance becomes no-pay')}
+                    {num('monthlyPaidLeaveLimit', 'Paid leave days per month (0 = no limit)', { step: 0.5, help: 'Extra days in the month become no-pay' })}
                     {num('leaveYearStartMonth', 'Leave year starts (month)', { min: 1, max: 12 })}
                 </Row>,
             },
