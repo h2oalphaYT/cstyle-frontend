@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import {
     AccountBookOutlined, ApartmentOutlined, AuditOutlined, BankOutlined, BranchesOutlined, CalculatorOutlined, CalendarOutlined, CarryOutOutlined, ClockCircleOutlined,
     ClusterOutlined, ControlOutlined, DashboardOutlined, DollarOutlined, EnvironmentOutlined, FieldTimeOutlined, FileExcelOutlined, FileTextOutlined, FundOutlined,
-    GiftOutlined, HistoryOutlined, IdcardOutlined, MinusCircleOutlined, PieChartOutlined, PlusCircleOutlined, ProfileOutlined, ScheduleOutlined, SettingOutlined,
+    GiftOutlined, HistoryOutlined, IdcardOutlined, MinusCircleOutlined, PieChartOutlined, PlusCircleOutlined, ProfileOutlined, ScheduleOutlined, SettingOutlined, AimOutlined, DesktopOutlined,
     SwapOutlined, TagsOutlined, TeamOutlined, ToolOutlined, UserOutlined, UserSwitchOutlined, WalletOutlined, WifiOutlined,
 } from '@ant-design/icons';
 
@@ -26,6 +26,12 @@ export const HR_NAV: HrNavSection[] = [
             { path: 'employees', label: 'Employees', icon: <TeamOutlined />, perms: ['employee.view'] },
             { path: 'groups', label: 'Employee Groups', icon: <ClusterOutlined />, perms: ['org.manage'] },
             { path: 'employee-salary', label: 'Employee Salary', icon: <DollarOutlined />, perms: ['salary.view', 'salary.edit'] },
+        ],
+    },
+    {
+        title: 'Production', icon: <AimOutlined />, items: [
+            { path: 'production', label: 'Daily Target', icon: <AimOutlined />, perms: ['production.view', 'production.edit', 'production.manage'] },
+            { path: 'factory-board', label: 'Factory TV Board', icon: <DesktopOutlined />, perms: ['production.view', 'production.edit', 'production.manage'] },
         ],
     },
     {
@@ -62,7 +68,7 @@ export const HR_NAV: HrNavSection[] = [
             { path: 'designations', label: 'Designations', icon: <IdcardOutlined />, perms: ['org.manage'] },
             { path: 'org/hub', label: 'Hubs & Locations', icon: <EnvironmentOutlined />, perms: ['org.manage'] },
             { path: 'org/costCenter', label: 'Cost Centers', icon: <FundOutlined />, perms: ['org.manage'] },
-            { path: 'holidays', label: 'Holidays', icon: <CalendarOutlined />, perms: ['org.manage'] },
+            { path: 'holidays', label: 'Holidays', icon: <CalendarOutlined />, perms: ['org.manage', 'settings.manage', 'attendance.view'] },
         ],
     },
     {

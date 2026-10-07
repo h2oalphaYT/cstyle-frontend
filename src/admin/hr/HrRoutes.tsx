@@ -4,7 +4,9 @@ import { Result } from 'antd';
 import { useAuth } from '../../context/AuthContext';
 import { firstHrPath, HR_NAV } from './nav';
 import EmployeesPage from './Employees';
-import { BiometricDevicesPage, BiometricMappingsPage, DesignationsPage, EmployeeGroupsPage, HolidaysPage, LeaveTypesPage, LookupsPage, OrgUnitsPage, OvertimeTypesPage } from './SetupPages';
+import { BiometricDevicesPage, BiometricMappingsPage, DesignationsPage, EmployeeGroupsPage, LeaveTypesPage, LookupsPage, OrgUnitsPage, OvertimeTypesPage } from './SetupPages';
+import { HolidaysPage } from './Holidays';
+import { ProductionPage } from './Production';
 import { EmployeeSalaryPage, SalaryComponentsPage, SalaryStructuresPage } from './Salary';
 import { AttendancePage, BiometricEventsPage, ImportExportPage } from './Attendance';
 import { LeavePage, OvertimePage } from './Leave';
@@ -50,6 +52,8 @@ const pages: [string, ReactElement][] = [
     ['biometric/mappings', <BiometricMappingsPage />],
     ['biometric/events', <BiometricEventsPage />],
     ['leave', <LeavePage />],
+    ['production', <ProductionPage />],
+    ['factory-board', <Navigate to="/factory-board" replace />],
     ['leave-types', <LeaveTypesPage />],
     ['overtime', <OvertimePage />],
     ['overtime-types', <OvertimeTypesPage />],

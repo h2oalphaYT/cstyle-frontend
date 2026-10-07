@@ -138,24 +138,6 @@ export const OvertimeTypesPage = () => (
     />
 );
 
-export const HolidaysPage = () => (
-    <MasterData<Row>
-        title="Holidays" subtitle="Holidays are excluded from scheduled days; work on them is holiday overtime"
-        path="/hr/holidays" writePermission={['settings.manage', 'attendance.edit']} defaults={{ type: 'public', paid: true }}
-        fields={[
-            { name: 'date', label: 'Date', type: 'date', required: true }, { name: 'name', label: 'Name', required: true },
-            { name: 'type', label: 'Type', type: 'select', options: ['public', 'mercantile', 'bank', 'company', 'other'].map(v => ({ value: v, label: label(v) })) },
-            { name: 'paid', label: 'Paid holiday', type: 'switch' },
-            { name: 'orgUnits', label: 'Applies to (empty = everyone)', type: 'orgMulti' },
-        ]}
-        columns={[
-            { title: 'Date', dataIndex: 'date', width: 120 }, { title: 'Name', dataIndex: 'name' }, { title: 'Type', dataIndex: 'type', render: label, width: 120 },
-            { title: 'Paid', dataIndex: 'paid', width: 80, render: (p: boolean) => (p ? 'Yes' : 'No') },
-            { title: 'Applies to', dataIndex: 'orgUnits', render: (u: string[]) => (u?.length ? `${u.length} unit(s)` : 'Everyone') },
-        ]}
-    />
-);
-
 export const LookupsPage = () => (
     <MasterData<Row>
         title="Lists" subtitle="Employment types, external payment types, document types and banks"

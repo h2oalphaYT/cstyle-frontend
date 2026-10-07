@@ -35,6 +35,8 @@ const AnalyticsPage = lazy(() => import('./admin/pages/Analytics'));
 const SettingsPage = lazy(() => import('./admin/pages/Settings'));
 // Payroll & HR section, its own chunk.
 const HrRoutes = lazy(() => import('./admin/hr/HrRoutes'));
+// Full-screen factory TV board (no admin layout or Ant Design).
+const ProductionBoard = lazy(() => import('./admin/hr/ProductionBoard'));
 
 const StoreLayout = () => (
   <div className="min-h-screen flex flex-col bg-white dark:bg-brand-black transition-colors duration-300">
@@ -110,6 +112,8 @@ function AppContent() {
                 <Route path="/profile" element={<Navigate to="/account" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
+
+              <Route path="/factory-board" element={<RequireBackOffice><ProductionBoard /></RequireBackOffice>} />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<RequireBackOffice><AdminLayout /></RequireBackOffice>}>
