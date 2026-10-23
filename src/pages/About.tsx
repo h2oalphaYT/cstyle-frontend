@@ -113,7 +113,7 @@ const About: React.FC = () => {
                   We focus on precision and attention to detail, making sure each piece meets our clients’ exact specifications. Our floor runs on modern Juki and Siruba machinery, which keeps quality high and production efficient.
                 </p>
                 <p>
-                  Under the guidance of our founder, Mr. Ajith Siriwardena, CStyle continues to grow as a trusted name in apparel, and CStyle Collective brings that same craftsmanship straight to you.
+                  Under the leadership of our CEO, Chanuka Devin, CStyle continues to grow as a trusted name in apparel, and CStyle Collective brings that same craftsmanship straight to you.
                 </p>
               </div>
             </motion.div>
@@ -151,37 +151,47 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* ── FOUNDER ───────────────────────────────────────────────────── */}
+      {/* ── LEADERSHIP / CEO ─────────────────────────────────────────── */}
       <section className="py-28 bg-brand-surface">
         <div className="luxury-container">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-16 items-center">
             <motion.div {...fadeUp} className="relative lg:col-span-2">
               <div className="overflow-hidden aspect-[4/5]">
-                <img src={img('ajith-siriwardena')} alt="Ajith Siriwardena, CEO and Founder of CStyle" className="w-full h-full object-cover object-top" loading="lazy" />
+                <img
+                  src="/images/story/me.jpg"
+                  alt="Chanuka Devin, CEO of CStyle"
+                  className="w-full h-full object-cover object-top"
+                  loading="lazy"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/me.jpg'; }}
+                />
               </div>
               <div className="absolute -bottom-4 -right-4 w-28 h-28 border border-brand-champagne/30 -z-10" />
             </motion.div>
 
             <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-3">
-              <p className="text-brand-champagne uppercase tracking-[0.3em] text-xs mb-4">Meet the Founder</p>
-              <h2 className="text-2xl md:text-4xl font-light text-white uppercase tracking-[0.15em] mb-2">Ajith Siriwardena</h2>
-              <p className="text-brand-champagne text-[11px] uppercase tracking-[0.25em] mb-8">CEO / Founder</p>
+              <p className="text-brand-champagne uppercase tracking-[0.3em] text-xs mb-4">Leadership</p>
+              <h2 className="text-2xl md:text-4xl font-light text-white uppercase tracking-[0.15em] mb-2">Chanuka Devin</h2>
+              <p className="text-brand-champagne text-[11px] uppercase tracking-[0.25em] mb-8">CEO · Entrepreneur · Software Engineer · Marketing Specialist</p>
               <div className="space-y-5 text-brand-muted leading-relaxed text-sm">
                 <p>
-                  Mr. Ajith Siriwardena brings over 35 years of experience in the apparel industry. He spent 25 of those years as a Maintenance Manager at one of Bangladesh’s leading apparel companies, where he mastered garment production from the machines up.
+                  Chanuka Devin is an entrepreneur, software engineer, and marketing specialist leading CStyle's strategic growth, modern manufacturing operations, and global digital presence.
                 </p>
                 <p>
-                  He brought that knowledge home to Pitigala to build CStyle. His leadership drives the company towards excellence and innovation, and his hands-on approach is felt on the factory floor every day.
+                  Combining software engineering expertise with data-driven brand marketing and a forward-looking business vision, he spearheads CStyle's technological innovation, operational excellence, and brand expansion. Under his leadership, CStyle unites fine garment craftsmanship with next-generation technology.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-px bg-white/6 mt-10 max-w-md">
-                <div className="bg-brand-surface py-6 text-center">
-                  <div className="text-brand-champagne text-3xl font-light mb-1">35+</div>
-                  <div className="text-brand-muted text-[10px] uppercase tracking-[0.2em]">Years in apparel</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-white/6 mt-10 max-w-lg">
+                <div className="bg-brand-surface py-6 px-3 text-center">
+                  <div className="text-brand-champagne text-xs uppercase tracking-[0.2em] font-medium mb-1">Entrepreneur</div>
+                  <div className="text-brand-muted text-[10px] uppercase tracking-[0.15em]">Vision & Growth</div>
                 </div>
-                <div className="bg-brand-surface py-6 text-center">
-                  <div className="text-brand-champagne text-3xl font-light mb-1">25</div>
-                  <div className="text-brand-muted text-[10px] uppercase tracking-[0.2em]">Years in Bangladesh</div>
+                <div className="bg-brand-surface py-6 px-3 text-center">
+                  <div className="text-brand-champagne text-xs uppercase tracking-[0.2em] font-medium mb-1">Software Engineer</div>
+                  <div className="text-brand-muted text-[10px] uppercase tracking-[0.15em]">Tech & Systems</div>
+                </div>
+                <div className="bg-brand-surface py-6 px-3 text-center">
+                  <div className="text-brand-champagne text-xs uppercase tracking-[0.2em] font-medium mb-1">Marketing</div>
+                  <div className="text-brand-muted text-[10px] uppercase tracking-[0.15em]">Brand Specialist</div>
                 </div>
               </div>
             </motion.div>
