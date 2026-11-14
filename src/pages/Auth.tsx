@@ -68,7 +68,7 @@ const Auth: React.FC = () => {
   };
 
   const inputClass =
-    'w-full pl-9 pr-4 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs placeholder-white/25 focus:outline-none transition-colors duration-300';
+    'w-full pl-9 pr-4 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-xs placeholder-white/40 focus:outline-none transition-colors duration-300';
 
   const labelClass =
     'block text-[10px] font-medium text-brand-muted mb-1.5 uppercase tracking-[0.2em]';

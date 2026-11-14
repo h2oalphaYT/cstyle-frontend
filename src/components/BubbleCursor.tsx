@@ -69,7 +69,7 @@ function spawnBubble(x: number, y: number) {
     animationDuration: `${duration}ms`,
     // Random upward angle
     '--wobble': `${wobble}px`,
-  } as CSSStyleDeclaration & Record<string, string>);
+  } as unknown as CSSStyleDeclaration & Record<string, string>);
 
   // Slight horizontal wobble via a tiny translateX baked into start
   el.style.transform = `translateX(${wobble}px)`;
@@ -85,6 +85,7 @@ const BubbleCursor: React.FC = () => {
   useEffect(() => {
     // Only on true pointer (mouse/trackpad) devices
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     // Inject keyframes once
     if (!document.getElementById(STYLE_ID)) {

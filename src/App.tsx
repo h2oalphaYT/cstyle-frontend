@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation, Link } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -8,19 +9,24 @@ import { NotificationProvider } from './context/NotificationContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import BackToTop from './components/BackToTop';
 import BubbleCursor from './components/BubbleCursor';
 import { Spinner } from './components/StateViews';
 import Home from './pages/Home';
-import Shop from './pages/Shop';
-import ProductDetail from './pages/ProductDetail';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Auth from './pages/Auth';
-import Wishlist from './pages/Wishlist';
-import OrderSuccess from './pages/OrderSuccess';
-import { AccountPage, AccountOrdersPage, AccountOrderDetailPage, TrackOrder } from './pages/Account';
+// Home ships in the main bundle (it is the usual landing page); other pages load on demand.
+const Shop = lazy(() => import('./pages/Shop'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const AccountPage = lazy(() => import('./pages/Account').then(m => ({ default: m.AccountPage })));
+const AccountOrdersPage = lazy(() => import('./pages/Account').then(m => ({ default: m.AccountOrdersPage })));
+const AccountOrderDetailPage = lazy(() => import('./pages/Account').then(m => ({ default: m.AccountOrderDetailPage })));
+const TrackOrder = lazy(() => import('./pages/Account').then(m => ({ default: m.TrackOrder })));
 
 // The admin panel (Ant Design, charts) is loaded only when an admin opens it.
 const AdminLayout = lazy(() => import('./admin/components/AdminLayout'));
@@ -38,15 +44,28 @@ const HrRoutes = lazy(() => import('./admin/hr/HrRoutes'));
 // Full-screen factory TV board (no admin layout or Ant Design).
 const ProductionBoard = lazy(() => import('./admin/hr/ProductionBoard'));
 
-const StoreLayout = () => (
-  <div className="min-h-screen flex flex-col bg-white dark:bg-brand-black transition-colors duration-300">
-    <Header />
-    <main className="flex-1">
-      <Outlet />
-    </main>
-    <Footer />
-  </div>
-);
+/** Storefront shell: dark atelier tokens, sticky header, 250ms fade between routes. */
+const StoreLayout = () => {
+  const { pathname } = useLocation();
+  return (
+    <div className="storefront min-h-screen flex flex-col">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-cs-accent focus:text-brand-black focus:px-4 focus:py-2 text-xs uppercase tracking-[0.15em]">
+        Skip to content
+      </a>
+      <Header />
+      <main id="main" className="flex-1">
+        {/* Keyed by path, so each route fades in; query changes (filters) don't re-animate. */}
+        <div key={pathname} className="cs-page">
+          <Suspense fallback={<div className="min-h-[100svh]"><Spinner /></div>}>
+            <Outlet />
+          </Suspense>
+        </div>
+      </main>
+      <Footer />
+      <BackToTop />
+    </div>
+  );
+};
 
 /** Admins and payroll/HR staff reach /admin; everyone else is sent to log in. */
 const RequireBackOffice = ({ children }: { children: React.ReactElement }) => {
@@ -89,6 +108,7 @@ function AppContent() {
     <>
       {/* Ant Design's provider lives in AdminLayout so the storefront never downloads antd. */}
       <Router>
+        <MotionConfig reducedMotion="user">
           <BubbleCursor />
           <ScrollToTop />
           <Suspense fallback={<div className="min-h-screen bg-brand-black"><Spinner /></div>}>
@@ -132,6 +152,7 @@ function AppContent() {
               </Route>
             </Routes>
           </Suspense>
+        </MotionConfig>
         </Router>
     </>
   );

@@ -1,31 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ArrowUp, Shield } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { CONTACT, telHref } from '../config/store';
 import { errorMessage, http } from '../api/client';
 import { useNotify } from '../context/NotificationContext';
 
 const Footer: React.FC = () => {
   const notify = useNotify();
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +25,8 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-brand-black text-white relative border-t border-white/6 pt-16 pb-12">
+    // Bottom padding leaves room for the floating back-to-top button so it never covers text.
+    <footer className="bg-cs-bg text-cs-text relative border-t border-cs-border pt-16 pb-24 lg:pb-12">
       <div className="luxury-container">
         {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-16 border-b border-white/6">
@@ -71,7 +56,8 @@ const Footer: React.FC = () => {
                 <a
                   key={idx}
                   href={href}
-                  className="w-8 h-8 border border-white/12 flex items-center justify-center text-brand-muted hover:border-brand-champagne hover:text-brand-champagne transition-colors duration-300"
+                  aria-label={['Facebook', 'Instagram', 'Twitter'][idx]}
+                  className="w-11 h-11 border border-white/12 flex items-center justify-center text-brand-muted hover:border-brand-champagne hover:text-brand-champagne transition-colors duration-300"
                 >
                   <Icon className="w-3.5 h-3.5" />
                 </a>
@@ -162,17 +148,19 @@ const Footer: React.FC = () => {
             </div>
 
             <div className="space-y-4 text-xs text-brand-muted tracking-wide">
-              <div className="flex items-start space-x-3">
+              <address className="not-italic flex items-start space-x-3">
                 <MapPin className="w-3.5 h-3.5 text-brand-champagne flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">123 Fashion Street, Colombo 03, Sri Lanka</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-3.5 h-3.5 text-brand-champagne flex-shrink-0" />
-                <span>+94 11 234 5678</span>
-              </div>
+                <span className="leading-relaxed">{CONTACT.company}<br />{CONTACT.addressLines.join(', ')}</span>
+              </address>
+              {CONTACT.phone && (
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-3.5 h-3.5 text-brand-champagne flex-shrink-0" />
+                  <a href={telHref(CONTACT.phone)} className="hover:text-white">{CONTACT.phone}</a>
+                </div>
+              )}
               <div className="flex items-center space-x-3">
                 <Mail className="w-3.5 h-3.5 text-brand-champagne flex-shrink-0" />
-                <span>hello@cstyle.lk</span>
+                <a href={`mailto:${CONTACT.email}`} className="hover:text-white">{CONTACT.email}</a>
               </div>
             </div>
           </div>
@@ -194,7 +182,8 @@ const Footer: React.FC = () => {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="enter your email address"
-                className="flex-1 px-4 py-3 bg-transparent border-b border-white/20 focus:border-brand-champagne text-white text-xs placeholder-white/20 focus:outline-none transition-colors duration-300"
+                aria-label="Email address"
+                className="flex-1 px-4 py-3 bg-transparent border-b border-white/20 focus:border-brand-champagne text-white text-xs placeholder-white/40 focus:outline-none transition-colors duration-300"
               />
               <motion.button
                 whileTap={{ scale: 0.98 }}
@@ -213,18 +202,6 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} cStyle Atelier. All rights reserved.
           </p>
 
-          {/* Admin Access Button */}
-          <Link to="/admin">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-5 py-2.5 border border-brand-champagne/40 text-brand-champagne hover:bg-brand-champagne hover:text-brand-black text-[10px] font-medium uppercase tracking-[0.2em] transition-all duration-300 flex items-center space-x-2"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin Portal</span>
-            </motion.button>
-          </Link>
-
           <div className="flex space-x-6 text-[11px] uppercase tracking-[0.15em] text-brand-muted">
             <a href="#" className="hover:text-brand-champagne transition-colors duration-300">
               Privacy Policy
@@ -236,23 +213,6 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Floating Scroll to Top */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            whileHover={{ scale: 1.1, y: -4 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-brand-surface text-brand-champagne border border-brand-champagne/40 hover:bg-brand-champagne hover:text-brand-black shadow-2xl flex items-center justify-center transition-colors duration-300 cursor-pointer"
-            aria-label="Scroll to top"
-          >
-            <ArrowUp className="w-4 h-4" />
-          </motion.button>
-        )}
-      </AnimatePresence>
     </footer>
   );
 };

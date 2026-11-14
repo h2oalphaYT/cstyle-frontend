@@ -145,7 +145,7 @@ const Checkout: React.FC = () => {
   if (items.length === 0) return null;
 
   const inputClass =
-    'w-full px-0 py-3 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-sm placeholder-white/20 focus:outline-none transition-colors duration-300';
+    'w-full px-0 py-3 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-sm placeholder-white/40 focus:outline-none transition-colors duration-300';
   const labelClass = 'block text-[10px] font-medium text-brand-muted mb-1.5 uppercase tracking-[0.2em]';
   const err = (msg?: string) => msg && <p className="text-red-400/80 text-[10px] mt-1.5 tracking-wide">{msg}</p>;
 
@@ -334,7 +334,7 @@ const Checkout: React.FC = () => {
                       onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } }}
                       placeholder="Coupon code"
                       aria-label="Coupon code"
-                      className="flex-1 min-w-0 bg-transparent border border-white/15 focus:border-brand-champagne px-3 py-2 text-xs text-white tracking-[0.15em] placeholder-white/20 focus:outline-none"
+                      className="flex-1 min-w-0 bg-transparent border border-white/15 focus:border-brand-champagne px-3 py-2 text-xs text-white tracking-[0.15em] placeholder-white/40 focus:outline-none"
                     />
                     <button type="button" onClick={applyCoupon} disabled={couponBusy || !couponInput.trim()}
                       className="px-4 border border-brand-champagne/40 text-brand-champagne text-[10px] uppercase tracking-[0.18em] hover:bg-brand-champagne hover:text-brand-black disabled:opacity-40">

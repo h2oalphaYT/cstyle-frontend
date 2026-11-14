@@ -12,10 +12,12 @@ interface SearchBoxProps {
   inputClassName?: string;
   onDone?: () => void;
   showButton?: boolean;
+  /** "overlay" lists suggestions in the page flow (full-screen search) instead of a dropdown. */
+  variant?: 'dropdown' | 'overlay';
 }
 
 /** Product search with live suggestions (products and categories) from the API. */
-const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(({ className = '', inputClassName = '', onDone, showButton }, ref) => {
+const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(({ className = '', inputClassName = '', onDone, showButton, variant = 'dropdown' }, ref) => {
   const navigate = useNavigate();
   const { formatPrice } = useTheme();
   const [query, setQuery] = useState('');
@@ -57,10 +59,12 @@ const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(({ className = ''
     if (query.trim()) go(`/shop?search=${encodeURIComponent(query.trim())}`);
   };
 
-  const hasSuggestions = open && (products.length > 0 || categories.length > 0);
+  const overlay = variant === 'overlay';
+  const hasSuggestions = (open || overlay) && (products.length > 0 || categories.length > 0);
 
   return (
     <form onSubmit={submit} className={`relative ${className}`} role="search">
+      <div className="relative">
       <input
         ref={ref}
         type="search"
@@ -69,35 +73,38 @@ const SearchBox = forwardRef<HTMLInputElement, SearchBoxProps>(({ className = ''
         value={query}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={() => { if (!overlay) setTimeout(() => setOpen(false), 150); }}
         className={inputClassName}
         autoComplete="off"
       />
       {showButton && (
-        <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2" aria-label="Search">
-          <Search className="w-4 h-4 text-brand-muted hover:text-brand-champagne transition-colors" />
+        <button type="submit" className={`absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center`} aria-label="Search">
+          <Search className={`${overlay ? 'w-5 h-5' : 'w-4 h-4'} text-brand-muted hover:text-brand-champagne transition-colors`} />
         </button>
       )}
+      </div>
       {hasSuggestions && (
-        <div className="absolute left-0 right-0 sm:right-auto sm:w-80 top-full mt-2 z-50 bg-brand-surface border border-white/10 shadow-2xl py-2">
+        <div className={overlay
+          ? 'mt-6 border-t border-white/10 py-2 max-h-[60vh] overflow-y-auto'
+          : 'absolute left-0 right-0 sm:right-auto sm:w-80 top-full mt-2 z-50 bg-brand-surface border border-white/10 shadow-2xl py-2'}>
           {categories.map(c => (
             <button type="button" key={c.id} onMouseDown={(e) => e.preventDefault()} onClick={() => go(`/shop?category=${c.slug}`)}
-              className="w-full text-left px-4 py-2 text-[11px] uppercase tracking-[0.15em] text-brand-champagne hover:bg-white/5">
+              className="w-full text-left px-4 py-3 text-[11px] uppercase tracking-[0.15em] text-brand-champagne hover:bg-white/5">
               Category · {c.name}
             </button>
           ))}
           {products.map(p => (
             <button type="button" key={p.id} onMouseDown={(e) => e.preventDefault()} onClick={() => go(`/product/${p.slug || p.id}`)}
               className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/5 text-left">
-              <SafeImage src={p.thumbnail} alt="" wrapperClassName="w-9 h-11 flex-shrink-0" className="w-full h-full object-cover" />
+              <SafeImage src={p.thumbnail} alt="" width={36} height={44} wrapperClassName="w-9 h-11 flex-shrink-0" className="w-full h-full object-cover" />
               <span className="flex-1 min-w-0">
                 <span className="block text-xs text-white truncate">{p.name}</span>
-                <span className="block text-[11px] text-brand-muted">{formatPrice(p.price)}</span>
+                <span className="block text-[11px] cs-price">{formatPrice(p.price)}</span>
               </span>
             </button>
           ))}
           <button type="submit" onMouseDown={(e) => e.preventDefault()}
-            className="w-full text-left px-4 py-2 text-[11px] text-brand-muted hover:text-white uppercase tracking-[0.15em] border-t border-white/6 mt-1">
+            className="w-full text-left px-4 py-3 text-[11px] text-brand-muted hover:text-white uppercase tracking-[0.15em] border-t border-white/6 mt-1">
             See all results for "{query.trim()}"
           </button>
         </div>

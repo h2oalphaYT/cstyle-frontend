@@ -9,11 +9,8 @@ const ScrollToTop = () => {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        // Scroll to top with smooth behavior
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        // Jump to the top on route change (the new page fades in, so no smooth scroll).
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     }, [pathname]);
 
     return null;

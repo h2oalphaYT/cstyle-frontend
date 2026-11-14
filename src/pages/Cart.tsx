@@ -10,6 +10,7 @@ import { useApi } from '../hooks/useApi';
 import ProductCard from '../components/ProductCard';
 import SafeImage from '../components/SafeImage';
 import { Spinner } from '../components/StateViews';
+import { FREE_SHIPPING_THRESHOLD } from '../config/store';
 
 const Cart: React.FC = () => {
   const { items, totalItems, totalPrice, updateQuantity, removeFromCart, clearCart, loading } = useCart();
@@ -23,7 +24,7 @@ const Cart: React.FC = () => {
     configApi.get().then(r => setConfig(r.data)).catch(() => undefined);
   }, []);
 
-  const threshold = config?.freeShippingThreshold ?? 30000;
+  const threshold = config?.freeShippingThreshold ?? FREE_SHIPPING_THRESHOLD;
   const shippingCost = totalPrice === 0 || totalPrice >= threshold ? 0 : (config?.shippingFee ?? 1500);
   const finalTotal = totalPrice + shippingCost;
   const unavailable = items.filter(i => !i.available);

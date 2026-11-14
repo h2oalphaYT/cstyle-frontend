@@ -7,5 +7,7 @@ import { API_ORIGIN } from '../api/client';
 export const resolveImageUrl = (src?: string | null): string => {
     if (!src) return '';
     if (/^(https?:|data:|blob:)/i.test(src)) return src;
+    // Site's own public files (e.g. /images/hero/...) are served by the storefront, not the API.
+    if (src.startsWith('/images/')) return src;
     return `${API_ORIGIN}${src.startsWith('/') ? '' : '/'}${src}`;
 };

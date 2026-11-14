@@ -24,7 +24,7 @@ export const StatusBadge = ({ status }: { status: OrderStatus }) => (
   <span className={`inline-block border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] ${STATUS_COLORS[status]}`}>{status}</span>
 );
 
-const inputClass = 'w-full px-0 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-sm placeholder-white/20 focus:outline-none transition-colors';
+const inputClass = 'w-full px-0 py-2.5 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-sm placeholder-white/40 focus:outline-none transition-colors';
 const labelClass = 'block text-[10px] font-medium text-brand-muted mb-1 uppercase tracking-[0.2em]';
 
 /** Redirects guests to the login page and back afterwards. */

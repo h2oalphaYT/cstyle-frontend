@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { CountUp } from '../motion';
 import { Award, Users, Target, ShieldCheck, ArrowRight, MapPin, Scissors, Shirt, Truck, ClipboardList, Star, Heart } from 'lucide-react';
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }
 };
 
 const img = (name: string) => `/images/story/${name}.webp`;
@@ -78,12 +79,12 @@ const About: React.FC = () => {
       {/* ── HERO ──────────────────────────────────────────────────────── */}
       <section className="relative h-[70vh] min-h-[460px] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0">
-          <img src={img('storefront')} alt="CStyle (Pvt) Ltd factory in New Town, Pitigala" className="w-full h-full object-cover" />
+          <img src={img('storefront')} alt="CStyle (Pvt) Ltd factory in New Town, Pitigala" width={901} height={1200} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-brand-black/80 via-brand-black/60 to-brand-black" />
         </div>
 
         <div className="relative z-10 text-center px-6 max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}>
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}>
             <p className="text-brand-champagne uppercase tracking-[0.4em] text-xs mb-5 inline-flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5" /> New Town, Pitigala · Sri Lanka
             </p>
@@ -118,8 +119,8 @@ const About: React.FC = () => {
               </div>
             </motion.div>
 
-            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="relative">
-              <img src={img('shirt')} alt="A CStyle-made shirt" className="w-full h-[28rem] object-cover" loading="lazy" />
+            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }} className="relative">
+              <img src={img('shirt')} alt="A CStyle-made shirt" width={900} height={1200} className="w-full h-[28rem] object-cover" loading="lazy" />
               <div className="absolute -bottom-4 -left-4 w-24 h-24 border border-brand-champagne/30 -z-10" />
               <div className="absolute -top-4 -right-4 w-16 h-16 border border-brand-champagne/20 -z-10" />
               <div className="absolute -bottom-5 left-6 w-14 h-14 bg-brand-champagne flex items-center justify-center">
@@ -143,7 +144,7 @@ const About: React.FC = () => {
                 transition={{ delay: i * 0.1, duration: 0.7 }}
                 className="bg-brand-black py-14 px-4 text-center"
               >
-                <div className="font-light text-brand-champagne mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 300 }}>{stat.value}</div>
+                <CountUp value={stat.value} className="block font-poppins font-light text-brand-champagne mb-3 tabular-nums" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 300 }} />
                 <div className="text-brand-muted text-xs uppercase tracking-[0.2em]">{stat.label}</div>
               </motion.div>
             ))}
@@ -160,6 +161,8 @@ const About: React.FC = () => {
                 <img
                   src="/images/story/me.jpg"
                   alt="Chanuka Devin, CEO of CStyle"
+                  width={1288}
+                  height={1332}
                   className="w-full h-full object-cover object-top"
                   loading="lazy"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/me.jpg'; }}
@@ -168,7 +171,7 @@ const About: React.FC = () => {
               <div className="absolute -bottom-4 -right-4 w-28 h-28 border border-brand-champagne/30 -z-10" />
             </motion.div>
 
-            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-3">
+            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }} className="lg:col-span-3">
               <p className="text-brand-champagne uppercase tracking-[0.3em] text-xs mb-4">Leadership</p>
               <h2 className="text-2xl md:text-4xl font-light text-white uppercase tracking-[0.15em] mb-2">Chanuka Devin</h2>
               <p className="text-brand-champagne text-[11px] uppercase tracking-[0.25em] mb-8">CEO · Entrepreneur · Software Engineer · Marketing Specialist</p>
@@ -219,7 +222,7 @@ const About: React.FC = () => {
               <motion.div
                 key={item.label}
                 {...fadeUp}
-                transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                 className="group p-12 bg-brand-black hover:bg-brand-surface transition-colors duration-500 text-center"
               >
                 <div className="w-12 h-12 border border-brand-champagne/30 group-hover:border-brand-champagne flex items-center justify-center mx-auto mb-7 transition-colors duration-500">
@@ -242,10 +245,10 @@ const About: React.FC = () => {
               <motion.div
                 key={g.src}
                 {...fadeUp}
-                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                 className={`group overflow-hidden h-72 md:h-auto ${g.className}`}
               >
-                <img src={g.src} alt={g.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" loading="lazy" />
+                <img src={g.src} alt={g.alt} width={900} height={1100} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" loading="lazy" />
               </motion.div>
             ))}
           </div>
@@ -261,10 +264,10 @@ const About: React.FC = () => {
               <motion.div
                 key={step.title}
                 {...fadeUp}
-                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                 className="relative p-10 bg-brand-black"
               >
-                <span className="absolute top-6 right-8 text-5xl font-light text-white/5">0{i + 1}</span>
+                <span aria-hidden="true" className="absolute top-6 right-8 text-5xl font-light text-white/5 select-none">0{i + 1}</span>
                 <div className="w-12 h-12 bg-brand-champagne flex items-center justify-center mb-7">
                   <step.Icon className="w-5 h-5 text-brand-black" />
                 </div>
@@ -281,13 +284,13 @@ const About: React.FC = () => {
         <div className="luxury-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div {...fadeUp} className="relative order-2 lg:order-1">
-              <img src={img('juki-buttonhole')} alt="Juki automatic button hole machine" className="w-full h-[26rem] object-cover" loading="lazy" />
+              <img src={img('juki-buttonhole')} alt="Juki automatic button hole machine" width={714} height={768} className="w-full h-[26rem] object-cover" loading="lazy" />
               <div className="absolute -top-4 -right-4 w-14 h-14 bg-brand-champagne flex items-center justify-center">
                 <Scissors className="w-6 h-6 text-brand-black" />
               </div>
             </motion.div>
 
-            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="order-1 lg:order-2">
+            <motion.div {...fadeUp} transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }} className="order-1 lg:order-2">
               <p className="text-brand-champagne uppercase tracking-[0.3em] text-xs mb-4">Our Machinery</p>
               <h2 className="text-2xl md:text-3xl font-light text-white uppercase tracking-[0.15em] mb-8">Built for Precision</h2>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/6">
@@ -312,7 +315,7 @@ const About: React.FC = () => {
               <motion.div
                 key={value.label}
                 {...fadeUp}
-                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
                 className="group p-10 bg-brand-black hover:bg-brand-surface transition-colors duration-500 text-center"
               >
                 <div className="w-10 h-10 border border-brand-champagne/25 group-hover:border-brand-champagne flex items-center justify-center mx-auto mb-6 transition-colors duration-500">

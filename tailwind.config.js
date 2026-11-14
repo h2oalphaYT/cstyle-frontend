@@ -5,6 +5,19 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Storefront design tokens. Values live in index.css (:root --cs-*), so CSS and Tailwind agree.
+        cs: {
+          bg: 'rgb(var(--cs-bg-rgb) / <alpha-value>)',
+          surface: 'rgb(var(--cs-surface-rgb) / <alpha-value>)',
+          raised: 'rgb(var(--cs-surface-raised-rgb) / <alpha-value>)',
+          border: 'var(--cs-border)',
+          'border-strong': 'var(--cs-border-strong)',
+          text: 'rgb(var(--cs-text-rgb) / <alpha-value>)',
+          muted: 'rgb(var(--cs-muted-rgb) / <alpha-value>)',
+          accent: 'rgb(var(--cs-accent-rgb) / <alpha-value>)',
+          'accent-strong': 'rgb(var(--cs-accent-strong-rgb) / <alpha-value>)',
+          tile: 'rgb(var(--cs-tile-rgb) / <alpha-value>)',
+        },
         // Admin panel colours follow the light/dark toggle (values in index.css).
         admin: {
           layout: 'var(--admin-layout)',
@@ -27,9 +40,33 @@ export default {
           'gold-light': '#E8C35A',
           'text-light': '#F1F1F1',
           'text-dark': '#1A1A1A',
-          muted: '#A3A3A3',
+          muted: '#9A9A9A',
           subtle: '#E5E5E5',
         }
+      },
+      borderRadius: {
+        cs: 'var(--cs-radius)',
+        'cs-lg': 'var(--cs-radius-lg)',
+      },
+      spacing: {
+        // Spacing scale (4px base) for section rhythm: cs-1 … cs-8
+        'cs-1': 'var(--cs-space-1)',
+        'cs-2': 'var(--cs-space-2)',
+        'cs-3': 'var(--cs-space-3)',
+        'cs-4': 'var(--cs-space-4)',
+        'cs-5': 'var(--cs-space-5)',
+        'cs-6': 'var(--cs-space-6)',
+        'cs-7': 'var(--cs-space-7)',
+        'cs-8': 'var(--cs-space-8)',
+        header: 'var(--cs-header-h)',
+      },
+      transitionDuration: {
+        fast: '200ms',
+        base: '400ms',
+        slow: '600ms',
+      },
+      transitionTimingFunction: {
+        cs: 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],

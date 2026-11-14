@@ -1,16 +1,76 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Storefront design tokens ─────────────────────────────────────────
+   One source for colour, radius, spacing and motion. Tailwind exposes them as cs-* classes
+   (tailwind.config.js) and src/design/tokens.ts mirrors them for JS-driven motion.
+   The storefront is a dark "atelier" design in both themes; the light/dark toggle
+   switches the admin palette further down. */
+:root {
+  --cs-bg: #121212;
+  --cs-surface: #1a1a1a;
+  --cs-surface-raised: #202020;
+  --cs-border: rgba(255, 255, 255, 0.08);
+  --cs-border-strong: rgba(255, 255, 255, 0.16);
+  --cs-text: #f5f5f5;
+  --cs-muted: #9a9a9a;
+  --cs-accent: #c5a880;
+  --cs-accent-strong: #a88b65;
+  --cs-tile: #efebe3;
+
+  /* RGB channels of the same colours, so Tailwind opacity modifiers work (bg-cs-bg/70). */
+  --cs-bg-rgb: 18 18 18;
+  --cs-surface-rgb: 26 26 26;
+  --cs-surface-raised-rgb: 32 32 32;
+  --cs-text-rgb: 245 245 245;
+  --cs-muted-rgb: 154 154 154;
+  --cs-accent-rgb: 197 168 128;
+  --cs-accent-strong-rgb: 168 139 101;
+  --cs-tile-rgb: 239 235 227;
+
+  --cs-radius: 2px;
+  --cs-radius-lg: 6px;
+
+  --cs-space-1: 4px;
+  --cs-space-2: 8px;
+  --cs-space-3: 12px;
+  --cs-space-4: 16px;
+  --cs-space-5: 24px;
+  --cs-space-6: 32px;
+  --cs-space-7: 48px;
+  --cs-space-8: 64px;
+
+  --cs-dur-fast: 200ms;
+  --cs-dur-base: 400ms;
+  --cs-dur-slow: 600ms;
+  --cs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Height of the sticky header bar (without the promo strip). */
+  --cs-header-h: 64px;
+  /* Extra bottom space reserved by fixed bars (mobile sticky cart). */
+  --cs-bottom-bar: 0px;
+}
+
+@media (min-width: 1024px) {
+  :root { --cs-header-h: 80px; }
+}
+
 * {
   box-sizing: border-box;
+}
+
+html {
+  /* Never allow sideways scrolling on small screens. "clip" (unlike "hidden") doesn't
+     create a scroll container, so position: sticky keeps working. */
+  overflow-x: clip;
 }
 
 body {
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
+  overflow-x: clip;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -27,18 +87,78 @@ h1, h2, h3, h4, h5, h6 {
   h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
   }
-  
+
   p {
     line-height: 1.5;
   }
 
-  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Storefront typography: one heading style everywhere — Poppins light/regular,
+     uppercase, wide tracking. Body copy is Inter. */
+  .storefront {
+    background-color: var(--cs-bg);
+    color: var(--cs-text);
+    font-family: 'Inter', sans-serif;
+  }
+  :where(.storefront) :is(h1, h2, h3, h4, h5, h6) {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  :where(.storefront) :is(h3, h4, h5, h6) {
+    font-weight: 400;
+  }
+
+  .storefront :focus-visible {
+    outline: 2px solid var(--cs-accent);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 @layer components {
+  /* Price text: the muted gold accent, never bright yellow. */
+  .cs-price {
+    color: var(--cs-accent);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+
+  .cs-eyebrow {
+    @apply text-cs-accent uppercase tracking-[0.3em] text-xs;
+  }
+
+  .cs-heading {
+    @apply font-poppins font-light uppercase tracking-[0.15em] text-cs-text;
+  }
+
+  /* Minimum 44×44 touch target. */
+  .tap-44 {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Hide scrollbars on swipe rows but keep them scrollable. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .btn-primary {
     @apply bg-brand-canvas text-brand-black px-10 py-4 rounded-sm font-medium uppercase tracking-[0.18em] text-sm transition-all duration-300 hover:bg-brand-black hover:text-brand-canvas relative overflow-hidden;
   }
@@ -136,12 +256,6 @@ h1, h2, h3, h4, h5, h6 {
   transform-style: preserve-3d;
 }
 
-/* Smooth transitions for theme switching */
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
-}
 
 /* Custom scrollbar — minimal */
 ::-webkit-scrollbar {
@@ -310,4 +424,71 @@ h1, h2, h3, h4, h5, h6 {
 }
 .dark .line-through-cells {
   background-color: rgba(127, 29, 29, 0.2) !important;
+}
+
+/* ─── Storefront motion ─────────────────────────────────────────────── */
+/* Scroll reveal (src/motion Reveal): fade + translateY(24px → 0), once. */
+.cs-reveal {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity var(--reveal-dur, 0.5s) var(--reveal-ease, var(--cs-ease)) var(--reveal-delay, 0s),
+    transform var(--reveal-dur, 0.5s) var(--reveal-ease, var(--cs-ease)) var(--reveal-delay, 0s);
+}
+.cs-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Route change: 250ms fade-in of the new page. */
+@keyframes cs-page-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.cs-page {
+  animation: cs-page-in 250ms var(--cs-ease) backwards;
+}
+
+/* Product card 3D tilt (desktop pointer only, driven by CSS vars set in ProductCard). */
+.cs-tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  --lift: 0px;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(0, var(--lift), 0);
+  transition: transform var(--cs-dur-base) var(--cs-ease), box-shadow var(--cs-dur-base) var(--cs-ease), border-color var(--cs-dur-base) var(--cs-ease);
+  will-change: transform;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.cs-tilt.is-tilting {
+  /* Short transition while following the cursor so it stays smooth but responsive. */
+  transition: transform 120ms linear, box-shadow var(--cs-dur-base) var(--cs-ease), border-color var(--cs-dur-base) var(--cs-ease);
+}
+.cs-tilt.is-hovered {
+  --lift: -6px;
+  box-shadow: 0 28px 50px -18px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(197, 168, 128, 0.22);
+}
+.cs-tilt .cs-sheen {
+  background: radial-gradient(420px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.16), transparent 45%);
+  opacity: 0;
+  transition: opacity var(--cs-dur-base) var(--cs-ease);
+  mix-blend-mode: soft-light;
+}
+.cs-tilt.is-hovered .cs-sheen { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .cs-tilt, .cs-tilt.is-hovered { transform: none; }
+}
+
+/* Highlight pulse for product options the shopper still has to choose. */
+@keyframes cs-attention {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 168, 128, 0); }
+  30% { box-shadow: 0 0 0 4px rgba(197, 168, 128, 0.45); }
+}
+.cs-attention {
+  animation: cs-attention 1.2s var(--cs-ease) 2;
+  border-radius: 4px;
 }

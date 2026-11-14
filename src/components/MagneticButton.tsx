@@ -34,7 +34,8 @@ const MagneticButton: React.FC<MagneticButtonProps> = ({
   // Disable on touch-only devices
   const canHover =
     typeof window !== 'undefined' &&
-    window.matchMedia('(hover: hover)').matches;
+    window.matchMedia('(hover: hover)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {

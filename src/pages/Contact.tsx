@@ -4,6 +4,7 @@ import { MapPin, Phone, Mail, Clock, Send, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { errorMessage, http } from '../api/client';
 import { useNotify } from '../context/NotificationContext';
+import { CONTACT, CONTACT_HERO_IMAGE, telHref } from '../config/store';
 
 interface ContactFormData {
   name: string;
@@ -31,7 +32,7 @@ const Contact: React.FC = () => {
   };
 
   const inputClass =
-    'w-full px-0 py-3 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-sm placeholder-white/25 focus:outline-none transition-colors duration-300';
+    'w-full px-0 py-3 bg-transparent border-b border-white/15 focus:border-brand-champagne text-white text-sm placeholder-white/40 focus:outline-none transition-colors duration-300';
 
   const labelClass =
     'block text-[10px] font-medium text-brand-muted mb-2 uppercase tracking-[0.22em]';
@@ -42,9 +43,12 @@ const Contact: React.FC = () => {
       {/* ── HERO ──────────────────────────────────────────────────────── */}
       <section className="relative h-[50vh] min-h-[360px] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0">
+          {/* PLACEHOLDER: replace public/images/contact/contact-hero-REPLACE-ME.webp (see CONTACT_HERO_IMAGE in src/config/store.ts) */}
           <img
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80"
-            alt="Contact cStyle"
+            src={CONTACT_HERO_IMAGE}
+            alt=""
+            width={1600}
+            height={900}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-brand-black/65 via-brand-black/50 to-brand-black" />
@@ -97,25 +101,28 @@ const Contact: React.FC = () => {
               {[
                 {
                   Icon: MapPin,
-                  title: 'Visit Our Store',
-                  lines: ['123 Fashion Street', 'Colombo 03, Sri Lanka']
+                  title: 'Visit Our Workshop',
+                  lines: [CONTACT.company, ...CONTACT.addressLines] as string[]
                 },
-                {
+                // The phone row only appears once a real number is set in src/config/store.ts.
+                ...(CONTACT.phone ? [{
                   Icon: Phone,
                   title: 'Call Us',
-                  lines: ['+94 11 234 5678', 'Mon–Fri 9AM–6PM']
-                },
+                  lines: [CONTACT.phone],
+                  href: telHref(CONTACT.phone),
+                }] : []),
                 {
                   Icon: Mail,
                   title: 'Email Us',
-                  lines: ['hello@cstyle.lk', 'support@cstyle.lk']
+                  lines: [CONTACT.email],
+                  href: `mailto:${CONTACT.email}`,
                 },
                 {
                   Icon: Clock,
-                  title: 'Store Hours',
-                  lines: ['Mon–Fri: 10AM–8PM', 'Sat: 10AM–6PM', 'Sun: 12PM–5PM']
+                  title: 'Opening Hours',
+                  lines: [...CONTACT.hours] as string[]
                 }
-              ].map((item, i) => (
+              ].map((item: { Icon: typeof MapPin; title: string; lines: string[]; href?: string }, i) => (
                 <div key={i} className="flex items-start gap-5">
                   <div className="w-9 h-9 border border-brand-champagne/25 flex items-center justify-center flex-shrink-0">
                     <item.Icon className="w-3.5 h-3.5 text-brand-champagne" />
@@ -123,7 +130,9 @@ const Contact: React.FC = () => {
                   <div>
                     <h3 className="text-white text-xs font-light uppercase tracking-[0.18em] mb-1.5">{item.title}</h3>
                     {item.lines.map((line, j) => (
-                      <p key={j} className="text-brand-muted text-xs leading-relaxed">{line}</p>
+                      item.href && j === 0
+                        ? <a key={j} href={item.href} className="block text-brand-muted hover:text-white text-xs leading-relaxed">{line}</a>
+                        : <p key={j} className="text-brand-muted text-xs leading-relaxed">{line}</p>
                     ))}
                   </div>
                 </div>
@@ -223,8 +232,9 @@ const Contact: React.FC = () => {
 
                 {/* Subject */}
                 <div>
-                  <label className={labelClass}>Subject *</label>
+                  <label className={labelClass} htmlFor="contact-subject">Subject *</label>
                   <select
+                    id="contact-subject"
                     {...register('subject', { required: 'Please select a subject' })}
                     className={`${inputClass} cursor-pointer appearance-none`}
                   >
@@ -314,20 +324,25 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            {/* Map placeholder */}
+            {/* Location */}
             <div className="bg-brand-surface border border-white/6 p-8">
               <p className="text-brand-champagne uppercase tracking-[0.3em] text-xs mb-3">Location</p>
-              <h3 className="text-sm font-light text-white uppercase tracking-[0.18em] mb-6">Find Our Store</h3>
-              <div className="h-52 bg-brand-black border border-white/8 flex items-center justify-center mb-5">
-                <div className="text-center">
-                  <MapPin className="w-6 h-6 text-brand-champagne/40 mx-auto mb-2" />
-                  <p className="text-brand-muted text-xs tracking-wide">Interactive map</p>
-                </div>
-              </div>
+              <h3 className="text-sm font-light text-white uppercase tracking-[0.18em] mb-6">Find Our Workshop</h3>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${CONTACT.company}, ${CONTACT.addressLines.join(', ')}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-40 bg-brand-black border border-white/8 flex items-center justify-center mb-5 group hover:border-brand-champagne/50 transition-colors"
+              >
+                <span className="text-center">
+                  <MapPin className="w-6 h-6 text-brand-champagne mx-auto mb-2" />
+                  <span className="block text-brand-muted group-hover:text-white text-xs uppercase tracking-[0.15em]">Open in Google Maps</span>
+                </span>
+              </a>
               <p className="text-brand-muted text-xs tracking-wide text-center">
-                Our flagship store in Colombo's fashion district
+                Where every CStyle piece is cut and stitched
                 <br />
-                <span className="text-white">123 Fashion Street, Colombo 03, Sri Lanka</span>
+                <span className="text-white">{CONTACT.company}, {CONTACT.addressLines.join(', ')}</span>
               </p>
             </div>
           </motion.div>
