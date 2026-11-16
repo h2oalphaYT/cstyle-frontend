@@ -31,28 +31,28 @@ const { Header, Sider, Content } = Layout;
 
 type NavItem = Required<MenuProps>['items'][number];
 
-interface StoreLink { path: string; label: string; icon: React.ReactNode }
+interface StoreLink { path: string; code?: string; label: string; icon: React.ReactNode }
 
 /** Store administration menu, admins only. Grouped by what people come to do. */
 const STORE_GROUPS: { key: string; title: string; items: StoreLink[] }[] = [
     {
         key: 'store', title: 'Store', items: [
-            { path: '/admin', label: 'Dashboard', icon: <DashboardOutlined /> },
-            { path: '/admin/orders', label: 'Orders', icon: <ShoppingCartOutlined /> },
-            { path: '/admin/customers', label: 'Customers', icon: <UserOutlined /> },
-            { path: '/admin/analytics', label: 'Analytics', icon: <BarChartOutlined /> },
+            { path: '/admin', code: 'SO-01', label: 'Dashboard', icon: <DashboardOutlined /> },
+            { path: '/admin/orders', code: 'SO-02', label: 'Orders', icon: <ShoppingCartOutlined /> },
+            { path: '/admin/customers', code: 'SO-03', label: 'Customers', icon: <UserOutlined /> },
+            { path: '/admin/analytics', code: 'SO-04', label: 'Analytics', icon: <BarChartOutlined /> },
         ],
     },
     {
         key: 'catalog', title: 'Catalog', items: [
-            { path: '/admin/products', label: 'Products', icon: <ShoppingOutlined /> },
-            { path: '/admin/categories', label: 'Categories', icon: <AppstoreOutlined /> },
-            { path: '/admin/inventory', label: 'Stock / Inventory', icon: <InboxOutlined /> },
-            { path: '/admin/offers', label: 'Coupons & Banners', icon: <TagOutlined /> },
+            { path: '/admin/products', code: 'CA-01', label: 'Products', icon: <ShoppingOutlined /> },
+            { path: '/admin/categories', code: 'CA-02', label: 'Categories', icon: <AppstoreOutlined /> },
+            { path: '/admin/inventory', code: 'CA-03', label: 'Stock / Inventory', icon: <InboxOutlined /> },
+            { path: '/admin/offers', code: 'CA-04', label: 'Coupons & Banners', icon: <TagOutlined /> },
         ],
     },
 ];
-const SYSTEM_LINKS: StoreLink[] = [{ path: '/admin/settings', label: 'Store Settings', icon: <SettingOutlined /> }];
+const SYSTEM_LINKS: StoreLink[] = [{ path: '/admin/settings', code: 'SY-01', label: 'Store Settings', icon: <SettingOutlined /> }];
 
 const hrPath = (p: string) => `/admin/hr${p ? `/${p}` : ''}`;
 
@@ -107,7 +107,9 @@ const AdminShell = () => {
             icon: i.icon,
             label: i.path === '/admin/orders' && pendingOrders > 0
                 ? <Link to={i.path} className="flex items-center justify-between gap-2">{i.label}<Badge count={pendingOrders} size="small" /></Link>
-                : <Link to={i.path}>{i.label}</Link>,
+                : <Link to={i.path} className="flex items-center justify-between gap-2" title={i.code ? `Security code ${i.code}` : undefined}>
+                    <span className="truncate">{i.label}</span>{i.code && <span className="text-[10px] font-mono opacity-60 shrink-0">{i.code}</span>}
+                </Link>,
         });
         // Collapsed, group titles have no room, so groups are separated by a thin divider instead.
         const group = (key: string, title: string, children: NavItem[]): NavItem[] => (collapsed
@@ -118,7 +120,7 @@ const AdminShell = () => {
         if (isAdmin) STORE_GROUPS.forEach(g => items.push(...group(g.key, g.title, g.items.map(link))));
         if (hrNav.length) {
             const hrChildren: NavItem[] = hrNav.flatMap((s): NavItem[] => {
-                const links = s.items.map(i => link({ path: hrPath(i.path), label: i.label, icon: i.icon }));
+                const links = s.items.map(i => link({ path: hrPath(i.path), code: i.code, label: i.label, icon: i.icon }));
                 return s.title === 'Overview' ? links : [{ key: `hr:${s.title}`, icon: s.icon, label: s.title, children: links }];
             });
             items.push(...group('hr', 'Payroll & HR', hrChildren));

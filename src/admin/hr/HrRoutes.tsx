@@ -14,6 +14,11 @@ import { AdvancesPage, ExternalPaymentsPage, PayrollEntriesPage } from './Financ
 import { AdjustmentsPage, PayrollProcessingPage, PayrollRunPage, PayslipsPage, ReportsPage } from './Payroll';
 import { HrDashboard, MyHrPage } from './Dashboard';
 import PayrollSettingsPage from './Settings';
+import { GatePassPage } from '../stores/GatePasses';
+import { ItemMasterPage } from '../stores/items';
+import { StockPage } from '../stores/Stock';
+import { JobsPage } from '../stores/Jobs';
+import { ScreenCodesPage, SecurityRolesPage, SecurityUsersPage } from '../security/SecurityPages';
 
 const permsFor = (path: string) => HR_NAV.flatMap(s => s.items).find(i => i.path === path)?.perms || [];
 
@@ -54,6 +59,14 @@ const pages: [string, ReactElement][] = [
     ['leave', <LeavePage />],
     ['production', <ProductionPage />],
     ['factory-board', <Navigate to="/factory-board" replace />],
+    ['gate-pass-out', <GatePassPage direction="out" key="out" />],
+    ['gate-pass-in', <GatePassPage direction="in" key="in" />],
+    ['stock', <StockPage />],
+    ['jobs', <JobsPage />],
+    ['security/users', <SecurityUsersPage />],
+    ['security/roles', <SecurityRolesPage />],
+    ['security/screens', <ScreenCodesPage />],
+    ['items', <ItemMasterPage />],
     ['leave-types', <LeaveTypesPage />],
     ['overtime', <OvertimePage />],
     ['overtime-types', <OvertimeTypesPage />],
